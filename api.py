@@ -255,7 +255,7 @@ def run_fleet_correlation():
     m1, _ = ModelWeightAttacker.inject_x_lsb_payload(base_model.weights, target_layer="block2.feature_extractor.weight", payload_text=shared_payload)
     m2, _ = ModelWeightAttacker.inject_x_lsb_payload(base_model.weights, target_layer="block2.feature_extractor.weight", payload_text=shared_payload)
     m3 = base_model.weights # Clean
-    m4, _ = ModelWeightAttacker.create_fine_tuned_variant(base_model.weights) # Clean fine-tuned
+    m4 = ModelWeightAttacker.create_fine_tuned_variant(base_model.weights) # Clean fine-tuned
     
     fleet = {
         "razorpay_fraud_scorer_v2.1": m1,

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RBI Model Integrity & Forensic Evidence Report — test_clean_model</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1E293B; background: #F1F5F9; padding: 24px; }
+        .report-container { max-width: 900px; margin: 0 auto; background: #FFFFFF; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); padding: 40px; border: 1px solid #E2E8F0; }
+        .header-bar { border-bottom: 2px solid #0F172A; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .badge { display: inline-block; padding: 8px 20px; font-size: 16px; font-weight: 800; border-radius: 6px; letter-spacing: 0.5px; border: 2px solid #10B981; background: #ECFDF5; color: #10B981; }
+        h2 { font-size: 18px; color: #0F172A; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #E2E8F0; padding-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+        th { background: #F8FAFC; text-align: left; padding: 10px 12px; border-bottom: 2px solid #CBD5E1; color: #475569; }
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }
+        .stat-card { background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px; border-radius: 6px; }
+        .stat-val { font-size: 20px; font-weight: 700; color: #0F172A; margin-top: 4px; }
+        .stat-label { font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 600; }
+        .footer-sig { margin-top: 40px; padding-top: 20px; border-top: 1px solid #E2E8F0; font-size: 11px; color: #64748B; }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <div class="header-bar">
+            <div>
+                <div style="font-size:12px; font-weight:700; color:#3B82F6; letter-spacing:1px; text-transform:uppercase;">WEIGHTTRAP Model Governance Suite</div>
+                <h1 style="margin:4px 0 0 0; font-size:24px; color:#0F172A;">RBI Model Risk Management & Forensic Autopsy Dossier</h1>
+                <div style="font-size:12px; color:#64748B; margin-top:4px;">In compliance with RBI FREE-AI (2025) & Enterprise Model Risk Management Framework (June 2026)</div>
+            </div>
+            <div>
+                <div class="badge">TRUSTED</div>
+            </div>
+        </div>
+
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-label">Model Identifier</div>
+                <div class="stat-val" style="font-size:14px; font-family:monospace; word-break:break-all;">test_clean_model</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Model Risk Score</div>
+                <div class="stat-val" style="color:#10B981;">0.0<span style="font-size:12px; color:#64748B;">/100</span></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Tensors Flagged</div>
+                <div class="stat-val">0 / 8</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Evasion Pattern</div>
+                <div class="stat-val" style="font-size:14px;">✅ NEGATIVE</div>
+            </div>
+        </div>
+
+        <h2>1. AI Bill of Materials (AIBOM) & Cryptographic Chain of Custody</h2>
+        <div style="font-size:13px; line-height:1.6; background:#F8FAFC; padding:16px; border-radius:6px; border:1px solid #E2E8F0;">
+            <b>Aggregate SHA-256:</b> <code style="color:#2563EB;">d83585f8fa48e5e2ed3b78821b614bfce2cb0f8b072c3919dc38af1d1df55c2d</code><br>
+            <b>Merkle Tree Root:</b> <code style="color:#059669;">5439b06ac61fd14cb68007bf28678db8bae17e0fa6bef297a4e10a3f630734ab</code><br>
+            <b>Total Parameters:</b> 3,346 float32 values across 8 tensors<br>
+            <b>Governance Classification:</b> Regulated Indian BFSI Automated Decision Asset (RBI-FREE-AI-Sutra-4)
+        </div>
+
+        <h2>2. Multi-Signal Statistical Anomaly Scan</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tensor Layer</th>
+                    <th>Parameters</th>
+                    <th>Risk Score</th>
+                    <th>Byte Entropy</th>
+                    <th>Benford Chi²</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block1.dense_in.weight</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>640</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>5.454</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>51.96</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block1.dense_in.bias</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>64</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>5.334</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>0.00</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block2.feature_extractor.weight</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>2,048</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>5.454</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>116.55</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block2.feature_extractor.bias</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>32</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>4.982</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>0.00</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block3.risk_aggregator.weight</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>512</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>5.433</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>33.25</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block3.risk_aggregator.bias</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>16</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>4.951</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>0.00</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block4.classifier_head.weight</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>32</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>5.237</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>0.00</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            <tr>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0; font-family:monospace;'>block4.classifier_head.bias</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>2</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><b>0.0</b>/100</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>1.906</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'>0.00</td>
+                <td style='padding:8px 12px; border-bottom:1px solid #E2E8F0;'><span style='color:#10B981;'>NORMAL</span></td>
+            </tr>
+            
+            </tbody>
+        </table>
+
+        <h2>3. Hierarchical Forensic Localization (Compute-Follows-Risk)</h2>
+        <div>
+            
+        </div>
+
+        <h2>4. Causal Counterfactual Validation (Mathematical Proof of Malice)</h2>
+        <div style="font-size:13px; line-height:1.6; background:#F8FAFC; padding:16px; border-radius:6px; border:1px solid #E2E8F0;">
+            <div style="font-weight:700; color:#10B981; margin-bottom:6px;">
+                Causal Verification Result: SUSPICIOUS_ANOMALY_EVIDENT
+            </div>
+            <div>Moderate causal behavioral shift (+24.3% over control).</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+                <div style="background:#FFFFFF; border:1px solid #E2E8F0; padding:10px; border-radius:4px;">
+                    <div style="font-size:11px; color:#64748B; font-weight:600;">TRIGGER FRAUD CATCH RESTORATION</div>
+                    <div style="font-size:16px; font-weight:700; color:#EF4444; margin-top:2px;">
+                        15.3% ➔ 24.3%
+                    </div>
+                </div>
+                <div style="background:#FFFFFF; border:1px solid #E2E8F0; padding:10px; border-radius:4px;">
+                    <div style="font-size:11px; color:#64748B; font-weight:600;">CONTROL LAYER ABLATION DELTA</div>
+                    <div style="font-size:16px; font-weight:700; color:#10B981; margin-top:2px;">
+                        +24.3% Malice Spread Over Control
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2>5. Fleet-Wide Coordinated Attack Telemetry</h2>
+        <div style="font-size:13px; background:#F8FAFC; padding:16px; border-radius:6px; border:1px solid #E2E8F0;">
+            Fleet intelligence active.
+        </div>
+
+        <div class="footer-sig">
+            <div style="display:flex; justify-content:space-between;">
+                <div>
+                    <b>Audited by:</b> WEIGHTTRAP Model Autopsy & Tripwire Sentinel Engine v1.0<br>
+                    <b>Document Digital Signature:</b> <code>8f1d361c59e17b1fab828735b709ffcca9d05fb52e431e4b948a2b0771ab301d</code>
+                </div>
+                <div style="text-align:right;">
+                    <b>Execution Timestamp:</b> 24 August 2026, 04:53:11 UTC<br>
+                    <b>Classification:</b> Regulated Financial Entity Confidential Evidence Record
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+        

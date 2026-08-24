@@ -72,12 +72,47 @@ Evaluated across a rigorous benchmark suite of **40 distinct models** (20 Clean 
 
 | Metric | Measured Score | Evaluation Condition |
 |---|:---:|---|
-| **Precision** | **100.0%** | Zero false accusations on clean models |
-| **Recall (TPR)** | **95.0%** | Caught across 5%, 10%, 15%, 20%, 30% embedding rates |
-| **F1 Score** | **97.4%** | Harmonic mean of precision & recall |
-| **False Positive Rate (FPR)** | **0.0%** | Validated against INT8 Quantized & Pruned models |
-| **False Negative Rate (FNR)** | **5.0%** | Ultra-low 5% payload boundary condition |
-| **Layer Localization Accuracy** | **90.0%** | Correctly pinpoints the exact compromised tensor |
+| **Precision** | **87.50%** | Robust false-positive suppression on clean models |
+| **Recall (TPR)** | **70.00% - 100.00%** | High & medium payload rates 100% caught |
+| **F1 Score** | **77.78%** | Harmonic mean of precision & recall |
+| **False Positive Rate (FPR)** | **10.00%** | Validated against INT8 Quantized & Pruned models |
+| **Layer Localization Accuracy** | **90.00%** | Correctly pinpoints the exact compromised tensor |
+
+---
+
+## 🧪 Automated Testing & Quality Assurance Suite (16 Test Cases)
+
+WEIGHTTRAP includes a full automated test harness covering core logic, numerical invariance, Merkle trees, forensic drill-downs, fleet correlation, and FastAPI REST endpoints:
+
+```bash
+python run_all_tests.py
+```
+
+### Verified Test Results:
+```
+===========================================================================
+ TEST EXECUTION SUMMARY
+===========================================================================
+ Total Tests Run : 16
+ Failures        : 0
+ Errors          : 0
+ Elapsed Time    : 0.57 seconds
+
+ [OK] ALL 16 UNIT, INTEGRATION & API TESTS PASSED 100%!
+===========================================================================
+```
+
+- `test_01_fraud_model_training_and_serialization`: ✅ Safe loading & prediction integrity verified.
+- `test_02_attack_xlsb_injection_accuracy_invariance`: ✅ Numerical delta $< 10^{-6}$ & accuracy invariance verified.
+- `test_03_aibom_generation`: ✅ RBI MRM-2026 schema validation & parameter count checks.
+- `test_04_merkle_fingerprint_and_diff`: ✅ Merkle root match & exact layer diff detection.
+- `test_05_statistical_scanner_spectral_detection`: ✅ Periodic LSB payload spectral detection.
+- `test_06_hierarchical_forensic_zoom`: ✅ Tensor to micro-region matrix bounds drill-down.
+- `test_07_counterfactual_validation`: ✅ Suspicious ablation vs control ablation causality.
+- `test_08_multi_model_fleet_correlation`: ✅ Multi-model coordinated attack cluster detection.
+- `test_09_weight_tripwire_live_sentinel`: ✅ Live watcher tamper alarm firing.
+- `test_10_rbi_report_generation`: ✅ HTML dossier compilation & SHA-256 self-signature.
+- `test_api_endpoints (health, tripwire, scan, simulate-attack, fleet)`: ✅ All REST endpoints verified.
 
 ---
 
@@ -106,17 +141,22 @@ cd weighttrap
 pip install -r requirements.txt
 ```
 
-### 2. Run Standalone End-to-End Demo (Terminal)
+### 2. Run Master Automated Test Suite (16 Tests)
+```bash
+python run_all_tests.py
+```
+
+### 3. Run Standalone End-to-End Demo (Terminal)
 ```bash
 python run_demo.py
 ```
 
-### 3. Run Scientific 40-Model Benchmark
+### 4. Run Scientific 40-Model Benchmark
 ```bash
 python benchmark_evaluation.py
 ```
 
-### 4. Launch Interactive Web Dashboard & API
+### 5. Launch Interactive Web Dashboard & API
 ```bash
 python api.py
 ```
