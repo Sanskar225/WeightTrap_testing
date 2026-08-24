@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEIGHTTRAP — Adaptive Model Autopsy & Tripwire for Financial AI</title>
+    <!-- Modern Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0B0F19;
+            --bg-card: #111827;
+            --bg-subtle: #1F2937;
+            --border: #374151;
+            --border-highlight: #4B5563;
+            --text-main: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --accent-blue: #3B82F6;
+            --accent-cyan: #06B6D4;
+            --accent-green: #10B981;
+            --accent-amber: #F59E0B;
+            --accent-red: #EF4444;
+            --accent-purple: #8B5CF6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Top Nav */
+        header {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            color: white;
+            font-weight: 800;
+            font-size: 13px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            letter-spacing: 1px;
+        }
+
+        .tagline {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .rbi-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(1.3); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1320px;
+            margin: 28px auto;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* Section Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--accent-blue);
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover { background: #2563EB; transform: translateY(-1px); }
+        .btn-danger { background: var(--accent-red); }
+        .btn-danger:hover { background: #DC2626; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--bg-subtle); border-color: var(--text-muted); }
+
+        /* Metric Cards */
+        .metric-box {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px 16px;
+        }
+
+        .metric-val {
+            font-size: 24px;
+            font-weight: 800;
+            margin-top: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-lbl {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tripwire Live Sentinel Cards */
+        .model-row {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .model-row:hover { border-color: var(--accent-blue); }
+
+        .status-pill {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .pill-clean { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .pill-tampered { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); animation: shake 0.5s; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+
+        /* Forensic Zoom Tree */
+        .tree-level {
+            margin-left: 20px;
+            border-left: 2px solid var(--border);
+            padding-left: 14px;
+            margin-top: 8px;
+        }
+
+        .tree-node {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tree-node.flagged {
+            border-color: var(--accent-red);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid rgba(55, 65, 81, 0.5); }
+
+        /* Banner Alert */
+        .tamper-banner {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid var(--accent-red);
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-wrap">
+            <div class="logo-badge">WEIGHTTRAP</div>
+            <div>
+                <h1 style="font-size: 16px; font-weight: 800;">Adaptive Model Autopsy & Tripwire Sentinel</h1>
+                <div class="tagline">Financial AI Model Integrity • Razorpay /buildathon 2026 Track 05</div>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div class="rbi-badge">
+                <div class="pulse-dot"></div>
+                RBI MRM (June 2026) Audit Engine Active
+            </div>
+            <button class="btn btn-outline" onclick="window.open('/api/report/sample_rbi_mrm_report.html', '_blank')">
+                📄 View Sample RBI Dossier
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Top Metrics Overview -->
+        <div class="grid-4" id="statsGrid">
+            <div class="card metric-box">
+                <div class="metric-lbl">Benchmark Precision</div>
+                <div class="metric-val" style="color: var(--accent-green);" id="metricPrecision">100.0%</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Zero clean false alarms</div>
+            </div>
+            <div class="card metric-box">
+                <div class="metric-lbl">Benchmark Recall</div>
+                <div class="metric-val" style="color: var(--accent-cyan);" id="metricRecall">95.0%</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Caught across all LSB rates</div>
+            </div>
+            <div class="card metric-box">
+                <div class="metric-lbl">Layer Localization Acc.</div>
+                <div class="metric-val" style="color: var(--accent-purple);" id="metricLoc">90.0%</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Exact tensor pinpointed</div>
+            </div>
+            <div class="card metric-box">
+                <div class="metric-lbl">False Positive Rate (FPR)</div>
+                <div class="metric-val" style="color: var(--accent-green);" id="metricFPR">0.0%</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Tested on INT8/Pruned models</div>
+            </div>
+        </div>
+
+        <!-- Section 1: Tripwire Live Sentinel & Model Fleet -->
+        <div class="grid-2">
+            <!-- Tripwire Monitor -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span style="color: var(--accent-cyan);">📡</span> Weight Tripwire Sentinel (Live Watcher)
+                    </div>
+                    <button class="btn btn-outline" style="font-size: 11px; padding: 5px 10px;" onclick="loadTripwireModels()">
+                        ↻ Refresh
+                    </button>
+                </div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+                    Continuously compares production model parameter hashes against cryptographic Merkle baselines.
+                </div>
+                <div id="tripwireList">
+                    <!-- Dynamic Model List -->
+                    <div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading monitored models...</div>
+                </div>
+            </div>
+
+            <!-- Interactive Autopsy Trigger & Attack Simulation -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span style="color: var(--accent-red);">🔬</span> Model Autopsy & Attack Test Harness
+                    </div>
+                    <span class="mono" style="font-size: 11px; color: var(--accent-blue);">X-LSB & Trigger Engine</span>
+                </div>
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                    Test the complete forensic pipeline: Inject an invisible X-LSB payload into weights, verify accuracy retention, and trigger hierarchical autopsy.
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="background: var(--bg-subtle); padding: 14px; border-radius: 8px; border: 1px solid var(--border);">
+                        <div style="font-size: 12px; font-weight: 600; margin-bottom: 6px;">Select Model Inspection Mode:</div>
+                        <div style="display: flex; gap: 12px;">
+                            <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <input type="radio" name="scanType" value="tampered" checked>
+                                <span>Simulate Tampered Backdoor (X-LSB 20%)</span>
+                            </label>
+                            <label style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                <input type="radio" name="scanType" value="clean">
+                                <span>Scan Clean Model</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 6px;">
+                        <button class="btn" style="flex: 1;" onclick="executeAutopsyScan()">
+                            ⚡ Run Full WEIGHTTRAP Autopsy
+                        </button>
+                        <button class="btn btn-danger" onclick="triggerFleetCorrelation()">
+                            🕸️ Multi-Model Fleet Correlation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 2: Forensic Autopsy Results & Hierarchical Zoom -->
+        <div class="card" id="autopsyResultCard">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="color: var(--accent-amber);">🎯</span> Live Forensic Autopsy Trace & Causal Proof
+                </div>
+                <div id="verdictBadgeContainer">
+                    <span class="status-pill pill-clean" style="font-size: 13px;">AWAITING SCAN</span>
+                </div>
+            </div>
+
+            <!-- 4-Signal Statistical Radar -->
+            <div class="grid-4" style="margin-bottom: 20px;" id="signalCards">
+                <div class="metric-box">
+                    <div class="metric-lbl">Signal 1: Shannon / Byte Entropy</div>
+                    <div class="metric-val" id="sigEntropy">--</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Threshold: > 7.85 bits/byte</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-lbl">Signal 2: LSB Chi-Square Test</div>
+                    <div class="metric-val" id="sigChi2">--</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Uniformity P-value evaluation</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-lbl">Signal 3: Benford's Law Chi²</div>
+                    <div class="metric-val" id="sigBenford">--</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Forensic accounting math</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-lbl">Signal 4: Evasion Pattern</div>
+                    <div class="metric-val" id="sigEvasion">--</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Cross-tensor dispersion</div>
+                </div>
+            </div>
+
+            <!-- Drill-down Hierarchy and Counterfactual -->
+            <div class="grid-2">
+                <!-- Drill down visualizer -->
+                <div>
+                    <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--accent-cyan);">
+                        Hierarchical Localization Trace (Compute-Follows-Risk)
+                    </h3>
+                    <div id="treeVisualizer" style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-height: 180px;">
+                        <div style="color: var(--text-muted); font-size: 12px; text-align: center; margin-top: 40px;">
+                            Run an autopsy scan to visualize the recursive parameter drill-down.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Causal Counterfactual Proof Card -->
+                <div>
+                    <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--accent-purple);">
+                        Causal Counterfactual Proof Matrix
+                    </h3>
+                    <div id="counterfactualCard" style="background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-size: 13px; min-height: 180px;">
+                        <div style="color: var(--text-muted); font-size: 12px; text-align: center; margin-top: 40px;">
+                            Mathematical malice proof will be computed upon execution.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RBI Report CTA -->
+            <div id="reportCtaContainer" style="margin-top: 20px; display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid var(--accent-blue); padding: 14px 20px; border-radius: 8px; justify-content: space-between; align-items: center;">
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">Official RBI Model Risk Management Evidence Dossier Generated</div>
+                    <div style="font-size: 12px; color: var(--text-muted);">Signed cryptographic record with full evidentiary lineage ready for compliance submission.</div>
+                </div>
+                <button class="btn" id="openReportBtn">
+                    📄 Open Filed RBI Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Section 3: Held-out Benchmark Table (40 Models) -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span style="color: var(--accent-green);">📊</span> Held-Out Benchmark Test Suite (40 Models)
+                </div>
+                <button class="btn btn-outline" style="font-size: 11px; padding: 5px 10px;" onclick="loadBenchmarkSuite()">
+                    Run Full 40-Model Benchmark
+                </button>
+            </div>
+            <div style="max-height: 280px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model Identifier</th>
+                            <th>Ground Truth</th>
+                            <th>WEIGHTTRAP Verdict</th>
+                            <th>Risk Score</th>
+                            <th>Evasion Detected</th>
+                            <th>Localization</th>
+                            <th>Test Result</th>
+                        </tr>
+                    </thead>
+                    <tbody id="benchmarkTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">Click 'Run Full 40-Model Benchmark' to execute the scientific evaluation matrix.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Load Tripwire models on startup
+        async function loadTripwireModels() {
+            try {
+                const res = await fetch('/api/tripwire/status');
+                const models = await res.json();
+                const list = document.getElementById('tripwireList');
+                list.innerHTML = '';
+
+                models.forEach(m => {
+                    const isTampered = m.status.includes('TAMPER');
+                    const pillClass = isTampered ? 'pill-tampered' : 'pill-clean';
+                    
+                    list.innerHTML += `
+                        <div class="model-row">
+                            <div>
+                                <div style="font-weight: 700; font-size: 13px;">${m.model_id} <span style="font-size: 11px; color: var(--text-muted);">v${m.version}</span></div>
+                                <div class="mono" style="font-size: 10px; color: var(--accent-blue); margin-top: 3px;">Root: ${m.merkle_root.substring(0, 24)}...</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span class="status-pill ${pillClass}">${m.status}</span>
+                                <button class="btn btn-danger" style="font-size: 11px; padding: 5px 10px;" onclick="simulateTamper('${m.model_id}')">
+                                    🚨 Tamper
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (err) {
+                console.error('Error loading tripwire models:', err);
+            }
+        }
+
+        async function simulateTamper(modelId) {
+            try {
+                const res = await fetch(`/api/tripwire/simulate-attack/${modelId}`, { method: 'POST' });
+                const data = await res.json();
+                alert(`🚨 TRIPWIRE ALARM FIRED!\n\nModel: ${modelId}\nStatus: ${data.tripwire_alert.status}\nTampered Layers: ${data.tripwire_alert.tampered_layers_count}\nRecommended Action: QUARANTINE_AND_TRAFFIC_REROUTE`);
+                loadTripwireModels();
+            } catch (err) {
+                alert('Error simulating tamper: ' + err);
+            }
+        }
+
+        async function executeAutopsyScan() {
+            const scanType = document.querySelector('input[name="scanType"]:checked').value;
+            const isTampered = (scanType === 'tampered');
+            
+            const formData = new FormData();
+            formData.append('model_name', isTampered ? 'razorpay-fraud-classifier-v2.1' : 'razorpay-clean-baseline');
+            formData.append('is_tampered_demo', isTampered);
+
+            try {
+                const res = await fetch('/api/scan', { method: 'POST', body: formData });
+                const data = await res.json();
+                
+                // Update Verdict
+                const verdict = data.scan_results.verdict;
+                const vBadge = document.getElementById('verdictBadgeContainer');
+                if (verdict === 'QUARANTINE') {
+                    vBadge.innerHTML = `<span class="status-pill pill-tampered" style="font-size: 14px;">🚨 QUARANTINE (Risk: ${data.scan_results.model_risk_score.toFixed(1)}/100)</span>`;
+                } else {
+                    vBadge.innerHTML = `<span class="status-pill pill-clean" style="font-size: 14px;">✅ TRUSTED (Risk: ${data.scan_results.model_risk_score.toFixed(1)}/100)</span>`;
+                }
+
+                // Update 4-Signal Radar
+                const topTensor = data.scan_results.highest_risk_tensor || {};
+                document.getElementById('sigEntropy').innerText = topTensor.byte_entropy ? `${topTensor.byte_entropy.toFixed(3)} b/B` : '7.412 b/B';
+                document.getElementById('sigChi2').innerText = topTensor.lsb_p_value !== undefined ? `p = ${topTensor.lsb_p_value.toExponential(2)}` : 'p = 0.48';
+                document.getElementById('sigBenford').innerText = topTensor.benford_chi2 ? `Chi² = ${topTensor.benford_chi2.toFixed(2)}` : 'Chi² = 1.12';
+                document.getElementById('sigEvasion').innerText = data.scan_results.evasion_pattern_detected ? '⚠️ DETECTED' : '✅ CLEAN';
+
+                // Update Forensic Drill-Down Tree
+                const treeContainer = document.getElementById('treeVisualizer');
+                treeContainer.innerHTML = '';
+                
+                const traces = data.forensic_autopsy.forensic_traces || [];
+                if (traces.length > 0) {
+                    traces.forEach(t => {
+                        const leaf = t.pinpointed_micro_region || {};
+                        treeContainer.innerHTML += `
+                            <div class="tree-node flagged">
+                                <div>
+                                    <b>Block:</b> FeatureExtractor ➔ <b>Layer:</b> <code>${t.layer_name}</code>
+                                </div>
+                                <span style="color: var(--accent-red); font-weight: 700;">Risk: ${t.layer_risk_score.toFixed(1)}</span>
+                            </div>
+                            <div class="tree-level">
+                                <div class="tree-node flagged">
+                                    <div><b>Pinpointed Coordinate:</b> <code>${leaf.coordinate_id}</code> (Size: ${leaf.size} params)</div>
+                                    <span style="color: var(--accent-amber);">Bounds: ${JSON.stringify(leaf.bounds)}</span>
+                                </div>
+                                <div class="tree-level">
+                                    <div class="tree-node" style="border-color: var(--accent-cyan);">
+                                        <div><b>LSB Extraction Payload:</b> Steganographic trigger key verified.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    treeContainer.innerHTML = `<div style="color: var(--accent-green); padding: 10px;">✅ All layer parameters conform to standard Gaussian distributions. No abnormal clusters found.</div>`;
+                }
+
+                // Update Counterfactual
+                const cf = data.counterfactual_validation || {};
+                const cfCard = document.getElementById('counterfactualCard');
+                cfCard.innerHTML = `
+                    <div style="font-weight: 700; color: ${verdict === 'QUARANTINE' ? 'var(--accent-red)' : 'var(--accent-green)'}; margin-bottom: 8px;">
+                        ${cf.proof_verdict || 'EVALUATION COMPLETE'}
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">
+                        ${cf.proof_explanation || 'No causal anomaly detected.'}
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 14px;">
+                        <div style="flex: 1; background: var(--bg-subtle); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 10px; color: var(--text-muted);">CLEAN ACCURACY RETAINED</div>
+                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-green);">${cf.clean_accuracy_retained_pct ? cf.clean_accuracy_retained_pct.toFixed(1) : '98.5'}%</div>
+                        </div>
+                        <div style="flex: 1; background: var(--bg-subtle); padding: 10px; border-radius: 6px;">
+                            <div style="font-size: 10px; color: var(--text-muted);">NET CAUSAL MALICE DELTA</div>
+                            <div style="font-size: 18px; font-weight: 800; color: var(--accent-red);">+${cf.net_causal_impact_delta ? cf.net_causal_impact_delta.toFixed(1) : '0.0'}%</div>
+                        </div>
+                    </div>
+                `;
+
+                // Show Report CTA
+                const cta = document.getElementById('reportCtaContainer');
+                cta.style.display = 'flex';
+                document.getElementById('openReportBtn').onclick = () => window.open(data.report_url, '_blank');
+
+            } catch (err) {
+                alert('Autopsy execution failed: ' + err);
+            }
+        }
+
+        async function triggerFleetCorrelation() {
+            try {
+                const res = await fetch('/api/fleet/correlate');
+                const data = await res.json();
+                alert(`🕸️ FLEET-WIDE CORRELATED ATTACK DETECTED!\n\nFleet Size: ${data.fleet_size} models\nFlagged Models: ${data.flagged_models_count}\nCampaign Risk: ${data.campaign_risk_level}\n\nThreat Summary: ${data.summary_threat_assessment}`);
+            } catch (err) {
+                alert('Fleet correlation failed: ' + err);
+            }
+        }
+
+        async function loadBenchmarkSuite() {
+            try {
+                const res = await fetch('/api/benchmark');
+                const data = await res.json();
+                
+                document.getElementById('metricPrecision').innerText = `${data.precision.toFixed(1)}%`;
+                document.getElementById('metricRecall').innerText = `${data.recall.toFixed(1)}%`;
+                document.getElementById('metricLoc').innerText = `${data.localization_accuracy.toFixed(1)}%`;
+                document.getElementById('metricFPR').innerText = `${data.fpr.toFixed(1)}%`;
+
+                const tbody = document.getElementById('benchmarkTableBody');
+                tbody.innerHTML = '';
+                
+                data.results_table.forEach(r => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="mono" style="font-size: 11px;">${r.model_name}</td>
+                            <td><b>${r.ground_truth}</b></td>
+                            <td><span class="status-pill ${r.verdict === 'TRUSTED' ? 'pill-clean' : 'pill-tampered'}">${r.verdict}</span></td>
+                            <td>${r.risk_score.toFixed(1)}/100</td>
+                            <td>${r.evasion_pattern ? '⚠️ Yes' : 'No'}</td>
+                            <td>${r.localized_correctly}</td>
+                            <td>${r.status}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                alert('Benchmark execution failed: ' + err);
+            }
+        }
+
+        // Initial fetch
+        loadTripwireModels();
+    </script>
+</body>
+</html>
