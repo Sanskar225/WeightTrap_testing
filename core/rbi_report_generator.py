@@ -87,10 +87,10 @@ class RBIReportGenerator:
         h2 {{ font-size: 18px; color: #0F172A; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #E2E8F0; padding-bottom: 6px; }}
         table {{ width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }}
         th {{ background: #F8FAFC; text-align: left; padding: 10px 12px; border-bottom: 2px solid #CBD5E1; color: #475569; }}
-        .stat-grid {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px; }}
-        .stat-card {{ background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px; border-radius: 6px; }}
+        .stat-grid {{ display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 12px; margin-top: 12px; }}
+        .stat-card {{ background: #F8FAFC; border: 1px solid #E2E8F0; padding: 12px 14px; border-radius: 6px; }}
         .stat-val {{ font-size: 20px; font-weight: 700; color: #0F172A; margin-top: 4px; }}
-        .stat-label {{ font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 600; }}
+        .stat-label {{ font-size: 11px; color: #64748B; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }}
         .footer-sig {{ margin-top: 40px; padding-top: 20px; border-top: 1px solid #E2E8F0; font-size: 11px; color: #64748B; }}
     </style>
 </head>
@@ -110,7 +110,7 @@ class RBIReportGenerator:
         <div class="stat-grid">
             <div class="stat-card">
                 <div class="stat-label">Model Identifier</div>
-                <div class="stat-val" style="font-size:14px; font-family:monospace; word-break:break-all;">{model_name}</div>
+                <div class="stat-val" style="font-size:13px; font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="{model_name}">{model_name}</div>
             </div>
             <div class="stat-card">
                 <div class="stat-label">Model Risk Score</div>
