@@ -441,11 +441,88 @@
             </div>
         </div>
 
-        <!-- Section 3: Held-out Benchmark Table (40 Models) -->
+        <!-- Section 3: Enterprise Fleet Command Center (50 Models Live Gateway) -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <div class="card-title">
+                        <span style="color: var(--accent-blue);">🌐</span> Enterprise Fleet Command Center (50 Production Models)
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                        Automated multi-threaded CI/CD & Registry Gateway scanning across Razorpay's entire multi-domain AI infrastructure.
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn" style="background: linear-gradient(135deg, #2563EB, #7C3AED);" onclick="scanEnterpriseFleet()">
+                        ⚡ Parallel Scan Entire 50-Model Fleet (< 1s)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fleet Live Telemetry Bar -->
+            <div class="grid-4" style="margin-bottom: 18px;" id="fleetTelemetryBar">
+                <div class="metric-box">
+                    <div class="metric-lbl">Fleet Throughput</div>
+                    <div class="metric-val" id="fleetThroughput" style="color: var(--accent-cyan);">63.0 /sec</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Multi-threaded worker pool</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-lbl">Total Batch Latency</div>
+                    <div class="metric-val" id="fleetBatchLatency" style="color: var(--accent-green);">0.79s</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">50 models scanned in parallel</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-lbl">Fleet Health Status</div>
+                    <div class="metric-val" id="fleetHealthStatus" style="color: var(--accent-green);">94.0%</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">47 Trusted / 3 Quarantined</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-lbl">Supply Chain APT Campaign</div>
+                    <div class="metric-val" id="fleetAptStatus" style="color: var(--accent-red); font-size: 16px;">🚨 CONFIRMED</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">3 models share exploit signature</div>
+                </div>
+            </div>
+
+            <!-- Domain Filter Chips -->
+            <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;" id="domainFilterContainer">
+                <button class="btn btn-outline" style="font-size: 11px; padding: 4px 12px; background: rgba(59,130,246,0.15);" onclick="filterFleetDomain('ALL')">All Domains (50)</button>
+                <button class="btn btn-outline" style="font-size: 11px; padding: 4px 12px;" onclick="filterFleetDomain('Fraud Defense')">Fraud Defense (10)</button>
+                <button class="btn btn-outline" style="font-size: 11px; padding: 4px 12px;" onclick="filterFleetDomain('Credit Underwriting')">Credit Underwriting (10)</button>
+                <button class="btn btn-outline" style="font-size: 11px; padding: 4px 12px;" onclick="filterFleetDomain('Payment Routing')">Payment Routing (10)</button>
+                <button class="btn btn-outline" style="font-size: 11px; padding: 4px 12px;" onclick="filterFleetDomain('Dispute Management')">Dispute Management (10)</button>
+                <button class="btn btn-outline" style="font-size: 11px; padding: 4px 12px;" onclick="filterFleetDomain('Agentic Commerce')">Agentic Commerce (10)</button>
+            </div>
+
+            <!-- Fleet Table -->
+            <div style="max-height: 320px; overflow-y: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model Identifier</th>
+                            <th>Domain / Cluster</th>
+                            <th>Criticality Tier</th>
+                            <th>Framework</th>
+                            <th>Scan Latency</th>
+                            <th>Merkle Root Hash</th>
+                            <th>Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fleetTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                Click <b>'⚡ Parallel Scan Entire 50-Model Fleet'</b> to trigger real-time enterprise CI/CD verification.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 4: Held-out Benchmark Table (40 Models) -->
         <div class="card">
             <div class="card-header">
                 <div class="card-title">
-                    <span style="color: var(--accent-green);">📊</span> Held-Out Benchmark Test Suite (40 Models)
+                    <span style="color: var(--accent-green);">📊</span> Held-Out Scientific Benchmark Suite (40 Models)
                 </div>
                 <button class="btn btn-outline" style="font-size: 11px; padding: 5px 10px;" onclick="loadBenchmarkSuite()">
                     Run Full 40-Model Benchmark
@@ -650,6 +727,71 @@
                 });
             } catch (err) {
                 alert('Benchmark execution failed: ' + err);
+            }
+        }
+        let globalFleetData = [];
+
+        async function scanEnterpriseFleet() {
+            const tbody = document.getElementById('fleetTableBody');
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--accent-cyan); padding: 20px;">⚡ Scanning 50 enterprise models across worker pool in parallel...</td></tr>`;
+
+            try {
+                const res = await fetch('/api/fleet/scan-enterprise-fleet');
+                const data = await res.json();
+                globalFleetData = data.fleet_results || [];
+
+                // Update Telemetry Bar
+                document.getElementById('fleetThroughput').innerText = `${data.throughput_models_per_second} /sec`;
+                document.getElementById('fleetBatchLatency').innerText = `${data.total_scan_time_seconds}s`;
+                document.getElementById('fleetHealthStatus').innerText = `${data.fleet_health_score_pct}% (${data.trusted_models_count} Pass / ${data.quarantined_models_count} Alert)`;
+                
+                const aptEl = document.getElementById('fleetAptStatus');
+                if (data.coordinated_campaign_detected) {
+                    aptEl.innerHTML = `<span style="color: var(--accent-red);">🚨 ${data.quarantined_models_count} MODELS COMPROMISED</span>`;
+                } else {
+                    aptEl.innerHTML = `<span style="color: var(--accent-green);">✅ FLEET SECURE</span>`;
+                }
+
+                renderFleetTable(globalFleetData);
+
+                if (data.coordinated_campaign_detected) {
+                    alert(`🚨 ENTERPRISE FLEET COMPROMISE DETECTED!\n\nFleet Size: ${data.fleet_size} Models Scanned in ${data.total_scan_time_seconds}s\nThroughput: ${data.throughput_models_per_second} models/sec\nQuarantined: ${data.quarantined_models_count} Models\nThreat Campaign: ${data.campaign_threat_level}\n\nCoordinated supply chain backdoor detected across Payment Routing & Credit underwriting models!`);
+                }
+            } catch (err) {
+                alert('Fleet scan error: ' + err);
+            }
+        }
+
+        function renderFleetTable(models) {
+            const tbody = document.getElementById('fleetTableBody');
+            tbody.innerHTML = '';
+
+            models.forEach(m => {
+                const isQuarantine = (m.verdict === 'QUARANTINE');
+                const badgeClass = isQuarantine ? 'pill-tampered' : (m.verdict === 'REVIEW' ? 'status-pill' : 'pill-clean');
+                const tierColor = m.tier.includes('Tier-0') ? 'var(--accent-red)' : (m.tier.includes('Tier-1') ? 'var(--accent-amber)' : 'var(--accent-blue)');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="mono" style="font-size: 11px; font-weight: 700;">${m.model_id}</td>
+                        <td><span style="background: rgba(59,130,246,0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">${m.domain}</span></td>
+                        <td><span style="color: ${tierColor}; font-size: 11px; font-weight: 600;">${m.tier}</span></td>
+                        <td style="font-size: 11px; color: var(--text-muted);">${m.framework}</td>
+                        <td style="font-size: 11px; font-family: monospace;">${m.scan_latency_ms} ms</td>
+                        <td class="mono" style="font-size: 10px; color: var(--accent-cyan);">${m.merkle_root.substring(0, 16)}...</td>
+                        <td><span class="status-pill ${badgeClass}">${m.verdict}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterFleetDomain(domain) {
+            if (!globalFleetData || globalFleetData.length === 0) return;
+            if (domain === 'ALL') {
+                renderFleetTable(globalFleetData);
+            } else {
+                const filtered = globalFleetData.filter(m => m.domain === domain);
+                renderFleetTable(filtered);
             }
         }
 

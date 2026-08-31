@@ -243,8 +243,19 @@ def view_html_report(filename: str):
     return HTMLResponse(content=content)
 
 
+@app.get("/api/fleet/scan-enterprise-fleet")
+async def scan_enterprise_fleet_endpoint(num_models: int = 50, threats: int = 3):
+    """
+    Executes parallel multi-threaded scanning across Razorpay's entire 50-model enterprise fleet.
+    Returns real-time telemetry, model health breakdown, latencies, and coordinated campaign detection.
+    """
+    from core.fleet_scanner import EnterpriseFleetEngine
+    results = EnterpriseFleetEngine.scan_entire_enterprise_fleet(num_models=num_models, num_threats=threats)
+    return results
+
+
 @app.get("/api/fleet/correlate")
-def run_fleet_correlation():
+async def run_fleet_correlation():
     """Simulates fleet-wide multi-model threat analysis."""
     base_model = FraudMLP(seed=42)
     X, y = get_cached_test_data()
