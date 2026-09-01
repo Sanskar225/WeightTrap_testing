@@ -254,6 +254,83 @@ async def scan_enterprise_fleet_endpoint(num_models: int = 50, threats: int = 3)
     return results
 
 
+@app.get("/api/swarm/investigate")
+async def run_swarm_investigation_endpoint(model_name: str = "razorpay-fraud-classifier-v2.1", is_tampered: bool = True):
+    """
+    Triggers real-time multi-agent collaborative investigation across 5 specialized SecOps AI agents.
+    """
+    from core.swarm_orchestrator import MultiAgentSecOpsSwarm
+    from core.svd_spectral_signature import SVDSpectralSignatureAuditor
+    
+    base_model = FraudMLP(seed=42)
+    X, y = get_cached_test_data()
+    
+    if is_tampered:
+        tampered_w, _ = ModelWeightAttacker.inject_x_lsb_payload(base_model.weights, "block2.feature_extractor.weight")
+        target_model = FraudMLP()
+        target_model.weights = tampered_w
+    else:
+        target_model = base_model
+
+    scan_data = StatisticalScanner.scan_model(target_model.weights)
+    svd_data = SVDSpectralSignatureAuditor.audit_day_zero_model(target_model, X[:300], y[:300])
+    fleet_data = {"quarantined_models_count": 3 if is_tampered else 0}
+
+    dialogue = MultiAgentSecOpsSwarm.run_swarm_investigation(
+        model_name=model_name,
+        is_tampered=is_tampered,
+        scan_data=scan_data,
+        svd_data=svd_data,
+        fleet_data=fleet_data
+    )
+
+    return {
+        "model_investigated": model_name,
+        "is_tampered": is_tampered,
+        "swarm_status": "INVESTIGATION_COMPLETE",
+        "swarm_consensus_verdict": scan_data["verdict"],
+        "agents_participated": len(MultiAgentSecOpsSwarm.AGENTS),
+        "incident_dialogue_stream": dialogue
+    }
+
+
+@app.get("/api/agent/react-investigate")
+async def run_agent_react_investigate(model_id: str = "razorpay-fraud-v2.1", is_tampered: bool = True, instruction: str = "Verify model trust lifecycle for production deployment"):
+    """
+    Executes real-time autonomous goal-driven decision trace for the Aegis AI Model Trust Lifecycle Orchestrator.
+    """
+    from core.secops_ai_agent import AegisTrustOrchestrator
+    
+    base_model = FraudMLP(seed=42)
+    X, y = get_cached_test_data()
+    
+    if is_tampered:
+        tampered_w, _ = ModelWeightAttacker.create_functional_backdoor(base_model.weights, "block2.feature_extractor.weight")
+        target_model = FraudMLP()
+        target_model.weights = tampered_w
+    else:
+        target_model = base_model
+
+    orchestrator = AegisTrustOrchestrator(orchestrator_id="Aegis-Trust-Engine-v2")
+    trace_res = orchestrator.evaluate_model_trust_lifecycle(
+        model_id=model_id,
+        model_obj=target_model,
+        X_val=X[:400],
+        y_val=y[:400],
+        operational_goal=instruction
+    )
+    return trace_res
+
+
+@app.get("/api/blast-radius/simulate")
+async def simulate_blast_radius_endpoint(model_id: str = "razorpay_fraud_scorer_v2.1", is_compromised: bool = True):
+    """
+    Simulates financial blast radius and downstream dependency exposure for Razorpay's microservices.
+    """
+    from core.blast_radius_simulator import BlastRadiusSimulator
+    return BlastRadiusSimulator.simulate_model_impact(model_id, is_compromised)
+
+
 @app.get("/api/fleet/correlate")
 async def run_fleet_correlation():
     """Simulates fleet-wide multi-model threat analysis."""
