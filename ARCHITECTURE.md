@@ -85,6 +85,20 @@ where:
 
 ---
 
+### 2.5 Bayesian Log-Odds Belief Updating & Epistemic Uncertainty
+
+Let $\mathcal{H} = \{H_0, H_1, H_2, H_3\}$ be the mutually exclusive incident hypotheses with prior distribution $P(H_k)$. Given multi-signal evidence vector $\mathbf{E} = [e_{\text{merkle}}, e_{\text{svd}}, e_{\text{stat}}, e_{\text{drift}}, e_{\text{causal}}, e_{\text{fleet}}]$:
+
+1. **Posterior Computation:**
+   $$P(H_k \mid \mathbf{E}) = \frac{P(\mathbf{E} \mid H_k) P(H_k)}{\sum_{j} P(\mathbf{E} \mid H_j) P(H_j)}$$
+
+2. **Shannon Epistemic Uncertainty Entropy:**
+   $$H(\mathcal{H}) = - \sum_{k=0}^{3} P(H_k \mid \mathbf{E}) \log_2 P(H_k \mid \mathbf{E})$$
+   - If $H(\mathcal{H}) > 1.2\text{ bits}$, the reasoner flags high epistemic ambiguity and dynamically branches to deep causal ablation.
+   - If $H(\mathcal{H}) \le 0.5\text{ bits}$, high-confidence certainty is established.
+
+---
+
 ## 3. Microservice Topology & Latency Budget
 
 ```

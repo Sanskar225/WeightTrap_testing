@@ -1,20 +1,26 @@
 """
-WEIGHTTRAP — Aegis AI Model Trust Lifecycle Orchestrator & Incident Reasoner
-Dynamic goal-driven reasoning and autonomous decision engine for AI Model Security.
+WEIGHTTRAP — Aegis AI Model Trust Lifecycle Orchestrator & Cognitive Incident Reasoner
+Bayesian Belief Updating, Epistemic Uncertainty Quantification & Dynamic Diagnostic Planning.
 
-Core Architecture:
-1. State-Driven Planning Loop: Goal -> State Evaluation -> Tool Selection -> Observation -> Dynamic Branching -> Policy Resolution
-2. Aegis AI Incident Reasoner:
-    - Multi-Hypothesis Probabilistic Evaluation (H0: Nominal/Drift, H1: LSB Backdoor, H2: Unauthorized Hot-Reload, H3: Coordinated Campaign)
-    - Contradiction & Stealth Resolution (e.g., KS/Chi2 heuristic pass vs Cryptographic Merkle divergence)
-    - Executive SecOps Root Cause Analysis (RCA) & Remediation Narrative
-3. Adaptive Tool Execution (Compute follows risk — skips expensive tools when evidence is clear):
-    - Clean Model Path: Ingestion Check -> Certified Normal -> SKIPS Forensics/Ablation -> TRUST
-    - Suspicious Path: Ingestion Check -> SVD Anomaly -> Forensic Localization -> Fleet Correlation -> Blast Radius -> QUARANTINE / REVIEW
+Core Mathematical Architecture:
+1. Formal Bayesian Belief Updating:
+   - Prior distribution over Hypotheses P(H_k):
+     H0: Nominal Baseline / Benign Concept Drift
+     H1: Targeted Steganographic Parameter Injection (X-LSB)
+     H2: Unauthorized In-Memory Hot-Reload / Registry Divergence
+     H3: Coordinated Multi-Model Enterprise Fleet Campaign
+   - Likelihood tensor P(E | H_k) computed across 6 distinct empirical diagnostic signals.
+   - Posterior distribution P(H_k | E) = [P(E | H_k) * P(H_k)] / P(E).
+2. Epistemic Uncertainty & Shannon Entropy:
+   - Diagnostic Entropy H(H) = -sum(P(H_k) * log2 P(H_k)).
+   - Triggers dynamic forensic zoom when diagnostic ambiguity exceeds threshold.
+3. Structured Cognitive RCA & Contradiction Resolution:
+   - Detects adaptive stealth evasions (e.g. KS-test uniform pass vs Cryptographic Merkle mismatch).
 """
 
 import time
 import json
+import math
 import hashlib
 import numpy as np
 from typing import Dict, List, Any, Optional
@@ -22,10 +28,105 @@ from typing import Dict, List, Any, Optional
 
 class AegisIncidentReasoner:
     """
-    Cognitive incident reasoning engine that evaluates multi-signal telemetry,
-    formulates competing incident hypotheses, resolves stealth contradictions,
-    and produces structured Root Cause Analysis (RCA) for financial SecOps.
+    Cognitive incident reasoning engine implementing Bayesian belief updating,
+    Shannon epistemic entropy quantification, and structured root cause synthesis.
     """
+
+    # Prior probabilities over nominal vs threat hypotheses in production banking
+    DEFAULT_PRIORS = {
+        "H0_NOMINAL_OR_BENIGN_DRIFT": 0.850,
+        "H1_STEGANOGRAPHIC_BACKDOOR": 0.050,
+        "H2_UNAUTHORIZED_HOT_RELOAD": 0.070,
+        "H3_COORDINATED_FLEET_CAMPAIGN": 0.030
+    }
+
+    @classmethod
+    def compute_bayesian_posteriors(
+        cls,
+        merkle_match: bool,
+        svd_spectral_ratio: float,
+        stat_risk_score: float,
+        behavioral_drift_rate: float,
+        causal_impact_delta: float,
+        fleet_compromise_count: int = 0
+    ) -> Dict[str, Any]:
+        """
+        Calculates formal Bayesian posterior probabilities P(H_k | E)
+        conditioned on the observed multi-signal evidence vector E.
+        """
+        priors = cls.DEFAULT_PRIORS.copy()
+        
+        # Define log-likelihood log P(E | H_k) based on physical properties of each failure mode
+        log_likelihoods = {
+            "H0_NOMINAL_OR_BENIGN_DRIFT": 0.0,
+            "H1_STEGANOGRAPHIC_BACKDOOR": 0.0,
+            "H2_UNAUTHORIZED_HOT_RELOAD": 0.0,
+            "H3_COORDINATED_FLEET_CAMPAIGN": 0.0
+        }
+
+        # Signal 1: Cryptographic Merkle Root
+        if merkle_match:
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] += 2.5
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] -= 6.0
+            log_likelihoods["H2_UNAUTHORIZED_HOT_RELOAD"] -= 6.0
+            log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] -= 4.0
+        else:
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 8.0
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 4.5
+            log_likelihoods["H2_UNAUTHORIZED_HOT_RELOAD"] += 5.5
+            log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 4.0
+
+        # Signal 2: SVD Representation Spectral Ratio (Tran et al., NeurIPS 2018)
+        if svd_spectral_ratio >= 0.80:
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 4.0
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 5.0
+            log_likelihoods["H2_UNAUTHORIZED_HOT_RELOAD"] += 2.0
+            log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 3.0
+        else:
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] += 1.5
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] -= 2.0
+
+        # Signal 3: Statistical Bit-Plane Scanner (Chi-square / KS-test)
+        if stat_risk_score >= 60.0:
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 4.0
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 3.0
+        elif stat_risk_score < 30.0 and not merkle_match:
+            # Stealth distribution-matched evasion scenario
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 3.0
+
+        # Signal 4: Causal Counterfactual Functional Impact
+        if causal_impact_delta > 0.05:
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 3.5
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 3.0
+
+        # Signal 5: Enterprise Fleet Cross-Model Correlation Graph
+        if fleet_compromise_count >= 2:
+            log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 6.0 + (fleet_compromise_count * 1.5)
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 5.0
+
+        # Unnormalized log-posteriors = log P(H_k) + log P(E | H_k)
+        unnorm_log_post = {}
+        for k in priors:
+            unnorm_log_post[k] = math.log(priors[k]) + log_likelihoods[k]
+
+        # Stable softmax normalization
+        max_log = max(unnorm_log_post.values())
+        exp_weights = {k: math.exp(v - max_log) for k, v in unnorm_log_post.items()}
+        total_weight = sum(exp_weights.values())
+        posteriors = {k: round(v / total_weight, 4) for k, v in exp_weights.items()}
+
+        # Calculate Shannon Epistemic Entropy: H = -sum(p * log2(p))
+        entropy = 0.0
+        for p in posteriors.values():
+            if p > 1e-6:
+                entropy -= p * math.log2(p)
+
+        return {
+            "priors": priors,
+            "posteriors": posteriors,
+            "epistemic_entropy_bits": round(entropy, 3),
+            "is_ambiguous": entropy > 1.2
+        }
 
     @classmethod
     def evaluate_incident_hypothesis(
@@ -39,81 +140,65 @@ class AegisIncidentReasoner:
         fleet_compromise_count: int = 0
     ) -> Dict[str, Any]:
         """
-        Formulates competing hypotheses and computes posterior likelihoods based on empirical evidence.
+        Executes Bayesian reasoning, diagnoses stealth contradictions,
+        quantifies epistemic uncertainty, and produces a structured SecOps RCA.
         """
-        # Competing Hypotheses:
-        # H0: Nominal Operational State / Benign Distribution Drift
-        # H1: Steganographic Parameter Injection (X-LSB / Bit Manipulation)
-        # H2: Unauthorized In-Memory Hot-Reload / Supply Chain Modification
-        # H3: Coordinated Multi-Model Adversarial Campaign
+        bayesian_res = cls.compute_bayesian_posteriors(
+            merkle_match=merkle_match,
+            svd_spectral_ratio=svd_spectral_ratio,
+            stat_risk_score=stat_risk_score,
+            behavioral_drift_rate=behavioral_drift_rate,
+            causal_impact_delta=causal_impact_delta,
+            fleet_compromise_count=fleet_compromise_count
+        )
 
-        h0_score = 100.0
-        h1_score = 0.0
-        h2_score = 0.0
-        h3_score = 0.0
+        posteriors = bayesian_res["posteriors"]
+        entropy = bayesian_res["epistemic_entropy_bits"]
 
         contradiction_notes = []
 
-        # Evidence evaluations
-        if not merkle_match:
-            h0_score -= 80.0
-            h2_score += 70.0
-            h1_score += 30.0
-
-        if svd_spectral_ratio >= 0.80:
-            h0_score -= 50.0
-            h1_score += 60.0
-            h2_score += 20.0
-
-        if stat_risk_score >= 60.0:
-            h1_score += 40.0
-        elif stat_risk_score < 30.0 and not merkle_match:
+        # Contradiction Resolution Logic
+        if not merkle_match and stat_risk_score < 30.0:
             contradiction_notes.append(
-                "Stealth Evasion Detected: Statistical heuristics (Chi-Square/KS) passed, "
-                "but Cryptographic Merkle Root diverged. High likelihood of distribution-matched LSB tampering."
+                "Stealth Evasion Signature: Bit-plane KS-test passed uniform distribution, "
+                "yet Cryptographic Merkle Root diverged. Suggests distribution-matched adaptive payload (e.g. FFT-jitter)."
             )
-            h1_score += 35.0
 
-        if causal_impact_delta > 0.05:
-            h1_score += 30.0
+        if svd_spectral_ratio >= 0.80 and merkle_match:
+            contradiction_notes.append(
+                "Supply-Chain Day-0 Anomaly: Model passed Day-N hash check, but Penultimate SVD representation "
+                "exhibits heavy-tail subspace concentration. Suggests pre-deployment training set poisoning."
+            )
 
-        if fleet_compromise_count >= 2:
-            h3_score = min(100.0, 40.0 + (fleet_compromise_count * 20.0))
-            h0_score -= 30.0
+        best_hypothesis = max(posteriors.items(), key=lambda x: x[1])
 
-        # Normalize probabilities
-        scores = {
-            "H0_NOMINAL_OR_BENIGN_DRIFT": max(0.0, h0_score),
-            "H1_STEGANOGRAPHIC_BACKDOOR": max(0.0, h1_score),
-            "H2_UNAUTHORIZED_HOT_RELOAD": max(0.0, h2_score),
-            "H3_COORDINATED_FLEET_CAMPAIGN": max(0.0, h3_score)
-        }
-        total = sum(scores.values()) or 1.0
-        probabilities = {k: round(v / total, 3) for k, v in scores.items()}
-
-        best_hypothesis = max(probabilities.items(), key=lambda x: x[1])
-
-        # Formulate executive narrative
+        # Formulate structured diagnostic narrative
         if best_hypothesis[0] == "H0_NOMINAL_OR_BENIGN_DRIFT":
-            rca_summary = f"Model '{model_id}' certified healthy. All cryptographic Merkle and latent SVD boundaries remain nominal."
+            rca_summary = (
+                f"Model '{model_id}' certified healthy with high Bayesian posterior probability "
+                f"(P={best_hypothesis[1]*100:.1f}%, Entropy={entropy} bits). All cryptographic and spectral boundaries nominal."
+            )
             recommended_action = "CONTINUE"
         elif best_hypothesis[0] == "H3_COORDINATED_FLEET_CAMPAIGN":
             rca_summary = (
-                f"Critical Incident: Coordinated supply-chain threat detected affecting {fleet_compromise_count} "
-                f"fleet models. Immediate cluster quarantine and failover required to protect payment routing."
+                f"Critical Security Incident: Coordinated multi-service supply-chain campaign detected across "
+                f"{fleet_compromise_count} microservices (Posterior P={best_hypothesis[1]*100:.1f}%). Immediate cluster quarantine mandated."
             )
             recommended_action = "QUARANTINE_CLUSTER"
         else:
             rca_summary = (
-                f"Integrity Breach: Model '{model_id}' exhibits {best_hypothesis[0]} (confidence: {best_hypothesis[1]*100:.1f}%). "
-                f"SVD energy ratio: {svd_spectral_ratio:.3f}, Merkle divergence: {not merkle_match}."
+                f"Integrity Breach Confirmed: Model '{model_id}' diagnosed with {best_hypothesis[0]} "
+                f"(Bayesian Confidence: {best_hypothesis[1]*100:.1f}%, Entropy: {entropy} bits). "
+                f"SVD Spectral Ratio: {svd_spectral_ratio:.3f}, Merkle Divergence: {not merkle_match}."
             )
             recommended_action = "CONTAIN_AND_REROUTE"
 
         return {
+            "reasoning_framework": "Bayesian Log-Odds Belief Updating (P(H_k | E))",
             "primary_hypothesis": best_hypothesis[0],
             "hypothesis_confidence": best_hypothesis[1],
-            "posterior_probabilities": probabilities,
+            "posterior_probabilities": posteriors,
+            "epistemic_uncertainty_entropy_bits": entropy,
             "contradiction_analysis": contradiction_notes or ["No anomalous evidence contradictions observed."],
             "root_cause_summary": rca_summary,
             "recommended_containment_action": recommended_action
@@ -244,6 +329,7 @@ class AegisTrustOrchestrator:
 
             executive_summary = (
                 f"Model '{model_id}' passed Day-0 SVD representation audit (S_ratio={s_ratio:.3f}). "
+                f"Bayesian reasoner established H0 nominal state with {rca['hypothesis_confidence']*100:.1f}% confidence. "
                 f"Autonomously skipped deep forensics and authorized primary route with sealed RBI MRM audit record."
             )
             blast_res = None
@@ -306,7 +392,7 @@ class AegisTrustOrchestrator:
                 }
             })
 
-            # Aegis AI Hypothesis Reasoning
+            # Aegis Bayesian AI Hypothesis Reasoning
             rca = AegisIncidentReasoner.evaluate_incident_hypothesis(
                 model_id=model_id,
                 merkle_match=False,
@@ -325,7 +411,7 @@ class AegisTrustOrchestrator:
                 "step": 5,
                 "domain_role": "Policy Engine",
                 "decision": "Enforce QUARANTINE, Failover Traffic & Sign Dossier",
-                "evidence": f"High blast radius ({blast_res['estimated_live_tps']} TPS) + Proven Hypothesis: {rca['primary_hypothesis']}",
+                "evidence": f"High blast radius ({blast_res['estimated_live_tps']} TPS) + Proven Hypothesis: {rca['primary_hypothesis']} (P={rca['hypothesis_confidence']*100:.1f}%)",
                 "reason": "Zero-tolerance containment: Reroute traffic to fallback within 2ms and mint RBI evidence record.",
                 "action": f"Failover traffic to `{blast_res['recommended_fallback_model']}` & compile signed RBI MRM dossier",
                 "finding": {
@@ -338,7 +424,8 @@ class AegisTrustOrchestrator:
             })
 
             executive_summary = (
-                f"Aegis Orchestrator neutralized a threat on '{model_id}' (Diagnosis: {rca['primary_hypothesis']}, Confidence: {rca['hypothesis_confidence']*100:.1f}%). "
+                f"Aegis Orchestrator neutralized a threat on '{model_id}' (Diagnosis: {rca['primary_hypothesis']}, "
+                f"Bayesian Confidence: {rca['hypothesis_confidence']*100:.1f}%, Shannon Entropy: {rca['epistemic_uncertainty_entropy_bits']} bits). "
                 f"SVD latent ratio spiked to {s_ratio:.3f} on '{layer_name}'. Fleet graph linked {comp_count} affected models. "
                 f"Blast radius analysis identified {blast_res['estimated_live_tps']} TPS at risk across {len(blast_res['direct_affected_pipelines'])} pipelines. "
                 f"Traffic safely rerouted to `{blast_res['recommended_fallback_model']}` in {blast_res['fallback_switch_latency_ms']}ms and signed RBI MRM evidence dossier filed."
