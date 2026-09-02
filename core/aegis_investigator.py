@@ -247,8 +247,20 @@ class AegisAutonomousControlPlane:
         })
 
         # ----------------------------------------------------------------------
-        # 10: DECIDE — Evidence-Driven Policy Enforcement
+        # 10: DECIDE — AI Incident Reasoning & Evidence-Driven Policy Enforcement
         # ----------------------------------------------------------------------
+        from core.secops_ai_agent import AegisIncidentReasoner
+
+        ai_reasoning = AegisIncidentReasoner.evaluate_incident_hypothesis(
+            model_id=model_id,
+            merkle_match=merkle_match,
+            svd_spectral_ratio=s_ratio,
+            stat_risk_score=stat_score,
+            behavioral_drift_rate=beh_res.get("distribution_drift_rate", 0.0),
+            causal_impact_delta=0.15 if causal_proven else 0.0,
+            fleet_compromise_count=fleet_res.get("quarantined_models_count", 0)
+        )
+
         if composite_evidence_score >= 50.0:
             computed_risk_level = "HIGH"
         elif composite_evidence_score >= 30.0 or is_behavior_anomalous:
@@ -267,10 +279,10 @@ class AegisAutonomousControlPlane:
         trace.append({
             "step_id": "10",
             "phase": "DECIDE",
-            "title": "Policy Engine Authorization Gate",
+            "title": "Aegis AI Incident Reasoning & Policy Authorization",
             "detail": (
-                f"Synthesized Multi-Signal Evidence Score = {composite_evidence_score:.1f}/100 "
-                f"(Merkle: {merkle_score:.0f}, SVD: {svd_score:.0f}, Stat: {stat_score:.0f}, Drift: {drift_score:.0f}, Causal: {causal_score:.0f}) ➔ "
+                f"Primary Diagnosis: {ai_reasoning['primary_hypothesis']} (Confidence: {ai_reasoning['hypothesis_confidence']*100:.1f}%). "
+                f"Synthesized Multi-Signal Evidence Score = {composite_evidence_score:.1f}/100 ➔ "
                 f"Calculated Risk Level: {computed_risk_level}. Policy Action Authorized: {policy_res['policy_decision']}."
             )
         })
@@ -368,5 +380,6 @@ class AegisAutonomousControlPlane:
             "router_status": router.get_router_status(),
             "topology_state": topo,
             "policy_action": policy_res,
+            "ai_incident_reasoning": ai_reasoning,
             "recovery_verification": recovery_res
         }
