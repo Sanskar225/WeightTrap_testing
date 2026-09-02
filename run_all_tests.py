@@ -22,11 +22,11 @@ if sys.platform == "win32":
 
 def run_master_test_suite():
     print("\n" + "=" * 75)
-    print(" WEIGHTTRAP -- AUTOMATED TEST SUITE & QUALITY ASSURANCE")
+    print(" WEIGHTTRAP -- 6-ENGINE CONTROL PLANE AUTOMATED TEST SUITE")
     print("=" * 75)
 
-    # 1. Run Unit & Integration Tests
-    print("\n[+] Running Unit & Integration Tests (10 Core Test Cases)...")
+    # 1. Run Unit & Integration Tests across all 6 engines
+    print("\n[+] Running Comprehensive QA Suite (25 Tests across 6 Control Plane Engines)...")
     loader = unittest.TestLoader()
     suite = loader.discover(start_dir="tests", pattern="test_*.py")
     
@@ -45,7 +45,7 @@ def run_master_test_suite():
     print(f" Elapsed Time    : {elapsed:.2f} seconds")
     
     if result.wasSuccessful():
-        print("\n [OK] ALL 10 UNIT & INTEGRATION TESTS PASSED 100%!")
+        print(f"\n [OK] ALL {result.testsRun} TESTS ACROSS 6 CONTROL PLANE ENGINES PASSED 100%!")
         print("=" * 75)
         return 0
     else:

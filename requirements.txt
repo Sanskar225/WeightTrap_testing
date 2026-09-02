@@ -10,6 +10,4 @@ aiofiles>=23.2.0
 pandas>=2.0.0
 matplotlib>=3.7.0
 seaborn>=0.12.0
-weasyprint>=60.0
-hashlib-compat>=1.0.0
 websockets>=12.0

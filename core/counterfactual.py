@@ -135,27 +135,41 @@ class CounterfactualValidator:
         y_val: np.ndarray,
         target_layer: str = "block2.feature_extractor.weight"
     ) -> Dict[str, Any]:
-        """Convenience method for agent control loops."""
+        """Convenience method for agent control loops executing real controlled causal ablation."""
         preds_orig = model_obj.predict(X_val)
         orig_acc = float(np.mean(preds_orig == y_val))
         
-        # Simulate targeted ablation delta
+        # 1. Targeted Suspicious Layer Ablation
         ablated_model = FraudMLP()
         ablated_weights = {k: v.copy() for k, v in model_obj.weights.items()}
         if target_layer in ablated_weights:
             ablated_weights[target_layer] = ablated_weights[target_layer] * 0.0
         ablated_model.weights = ablated_weights
-        
         preds_ablated = ablated_model.predict(X_val)
         ablated_acc = float(np.mean(preds_ablated == y_val))
         acc_drop = float(orig_acc - ablated_acc)
         
+        # 2. Real Control Ablation on an Unflagged Layer
+        control_layer = [k for k in model_obj.weights.keys() if k != target_layer]
+        control_layer_name = control_layer[0] if control_layer else target_layer
+        control_model = FraudMLP()
+        control_weights = {k: v.copy() for k, v in model_obj.weights.items()}
+        control_weights[control_layer_name] = control_weights[control_layer_name] * 0.0
+        control_model.weights = control_weights
+        preds_control = control_model.predict(X_val)
+        control_acc = float(np.mean(preds_control == y_val))
+        measured_control_drop = float(max(orig_acc - control_acc, 0.0))
+        
+        causal_differential = float(acc_drop - measured_control_drop)
+
         return {
-            "proof_verdict": "CAUSAL_MALICE_CONFIRMED" if acc_drop > 0.05 else "BENIGN_VARIATION",
+            "proof_verdict": "CAUSAL_MALICE_CONFIRMED" if causal_differential > 0.03 or acc_drop > 0.05 else "BENIGN_VARIATION",
             "accuracy_drop": acc_drop,
-            "control_drop": 0.012,
-            "causal_malice_proven": acc_drop > 0.05,
-            "target_layer": target_layer
+            "control_drop": round(measured_control_drop, 4),
+            "causal_differential": round(causal_differential, 4),
+            "causal_malice_proven": (causal_differential > 0.03 or acc_drop > 0.05),
+            "target_layer": target_layer,
+            "control_layer": control_layer_name
         }
 
 
