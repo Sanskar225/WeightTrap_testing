@@ -29,7 +29,7 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         cls.clean_model.fit(cls.X[:350], cls.y[:350], epochs=10)
 
     def test_01_orchestrator_clean_model_adaptive_skip(self):
-        """Test orchestrator autonomously certifies clean model and skips deep forensics."""
+        """Test orchestrator autonomously certifies clean model and Policy Engine authorizes CONTINUE."""
         orchestrator = AegisTrustOrchestrator(orchestrator_id="Test-Aegis-Engine")
         trace = orchestrator.evaluate_model_trust_lifecycle(
             model_id="clean-prod-model",
@@ -38,13 +38,14 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
             y_val=self.y[350:],
             operational_goal="Verify model trust lifecycle for production deployment"
         )
-        self.assertEqual(trace["policy_verdict"], "TRUST")
+        self.assertEqual(trace["policy_verdict"], "CONTINUE")
         self.assertEqual(trace["steps_executed_count"], 2)
+        self.assertEqual(trace["reasoning_branch"], "NOMINAL_CERTIFICATION")
         self.assertIn("actions_skipped", trace["decision_trace"][1]["finding"])
         self.assertEqual(trace["decision_trace"][1]["finding"]["deployment_state"], "AUTHORIZED_FOR_PRODUCTION")
 
     def test_02_orchestrator_backdoor_full_containment_trace(self):
-        """Test orchestrator executes multi-stage drilldown, fleet query, and strict quarantine."""
+        """Test orchestrator executes multi-stage drilldown and Policy Engine authorizes quarantine."""
         tampered_weights, _ = ModelWeightAttacker.create_functional_backdoor(
             self.clean_model.weights,
             target_layer="block2.feature_extractor.weight"
@@ -60,7 +61,7 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
             y_val=self.y[350:],
             operational_goal="Evaluate untrusted vendor model and enforce governance policy"
         )
-        self.assertEqual(trace["policy_verdict"], "QUARANTINE")
+        self.assertEqual(trace["policy_verdict"], "QUARANTINE_CLUSTER")
         self.assertEqual(trace["steps_executed_count"], 5)
         self.assertIsNotNone(trace["blast_radius_analysis"])
         
@@ -72,14 +73,13 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         self.assertIn("Policy Engine", roles)
         self.assertIn("causal_malice_proven", trace["decision_trace"][1]["finding"])
         self.assertTrue(trace["decision_trace"][1]["finding"]["causal_malice_proven"])
-        self.assertIn("ISOLATED_TO_", trace["decision_trace"][-1]["finding"]["traffic_state"])
-
+        self.assertIn("CLUSTER_ISOLATED_", trace["decision_trace"][-1]["finding"]["traffic_state"])
 
     def test_03_bayesian_entropy_reasoning_and_uncertainty_quantification(self):
         """Test Bayesian belief updating produces valid normalized posteriors and epistemic entropy."""
         from core.secops_ai_agent import AegisIncidentReasoner
         
-        # Test Case 1: Clean Nominal Model
+        # Test Case 1: Clean Nominal Model (Low Entropy H < 0.60)
         clean_res = AegisIncidentReasoner.compute_bayesian_posteriors(
             merkle_match=True,
             svd_spectral_ratio=0.15,
@@ -107,17 +107,32 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         self.assertTrue(len(stealth_rca["contradiction_analysis"]) > 0)
         self.assertIn("Stealth", stealth_rca["contradiction_analysis"][0])
 
-        # Test Case 3: High Epistemic Ambiguity (Conflicting Signals Triggering is_ambiguous)
+        # Test Case 3: High Epistemic Ambiguity Asserting Operational Threshold (H > 1.20 bits)
         ambiguous_res = AegisIncidentReasoner.compute_bayesian_posteriors(
             merkle_match=False,
-            svd_spectral_ratio=0.70,
-            stat_risk_score=35.0,
+            svd_spectral_ratio=0.50,
+            stat_risk_score=40.0,
             behavioral_drift_rate=0.08,
-            causal_impact_delta=0.02,
-            fleet_compromise_count=0
+            causal_impact_delta=0.0,
+            fleet_compromise_count=1
         )
         self.assertTrue(ambiguous_res["is_ambiguous"])
-        self.assertGreater(ambiguous_res["epistemic_entropy_bits"], 0.85)
+        self.assertGreater(ambiguous_res["epistemic_entropy_bits"], 1.20)
+
+    def test_04_orchestrator_deterministic_policy_authority(self):
+        """Test PolicyActionEngine acts as the true deterministic gatekeeper for orchestrator verdicts."""
+        orchestrator = AegisTrustOrchestrator(orchestrator_id="Test-Aegis-Engine")
+        trace = orchestrator.evaluate_model_trust_lifecycle(
+            model_id="clean-prod-model",
+            model_obj=self.clean_model,
+            X_val=self.X[350:],
+            y_val=self.y[350:],
+            operational_goal="Verify deterministic policy authority"
+        )
+        policy_step = trace["decision_trace"][-1]
+        self.assertEqual(policy_step["domain_role"], "Policy Engine")
+        self.assertIn("policy_authorization_token", policy_step["finding"])
+        self.assertIn("POL-AUTH-2026", policy_step["finding"]["policy_authorization_token"])
 
 
 if __name__ == "__main__":

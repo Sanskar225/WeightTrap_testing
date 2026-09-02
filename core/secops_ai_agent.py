@@ -72,9 +72,9 @@ class AegisIncidentReasoner:
             log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] -= 4.0
         else:
             log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 8.0
-            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 4.5
-            log_likelihoods["H2_UNAUTHORIZED_HOT_RELOAD"] += 5.5
-            log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 4.0
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 4.8
+            log_likelihoods["H2_UNAUTHORIZED_HOT_RELOAD"] += 4.5
+            log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 3.5
 
         # Signal 2: SVD Representation Spectral Ratio (Tran et al., NeurIPS 2018)
         if svd_spectral_ratio >= 0.80:
@@ -108,6 +108,8 @@ class AegisIncidentReasoner:
         if fleet_compromise_count >= 2:
             log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 6.0 + (fleet_compromise_count * 1.5)
             log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 5.0
+        elif fleet_compromise_count == 1:
+            log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 1.3
 
         # Unnormalized log-posteriors = log P(H_k) + log P(E | H_k)
         unnorm_log_post = {}
@@ -126,10 +128,10 @@ class AegisIncidentReasoner:
             if p > 1e-6:
                 entropy -= p * math.log2(p)
 
-        # Ambiguity threshold: when entropy exceeds 0.80 bits or top margin < 0.45
+        # Ambiguity threshold: when entropy exceeds 1.20 bits or top margin < 0.25
         sorted_probs = sorted(posteriors.values(), reverse=True)
         margin = sorted_probs[0] - sorted_probs[1] if len(sorted_probs) > 1 else 1.0
-        is_ambiguous = (entropy > 0.80) or (margin < 0.45)
+        is_ambiguous = (entropy > 1.20) or (margin < 0.25)
 
         return {
             "priors": priors,
@@ -310,20 +312,29 @@ class AegisTrustOrchestrator:
         if not is_backdoor:
             # Clean Model Path -> Adaptive Skip
             state["policy_verdict"] = "TRUST"
+            from core.policy_action_engine import PolicyActionEngine
+            policy_res = PolicyActionEngine.evaluate_and_enforce_policy(
+                model_id=model_id,
+                risk_level="LOW",
+                criticality="TIER_0"
+            )
+            state["policy_verdict"] = policy_res["policy_decision"]
+            state["reasoning_branch"] = "NOMINAL_CERTIFICATION"
             dossier_res = self._tool_generate_rbi_evidence_dossier(model_id, model_obj.weights, "TRUSTED")
 
             decision_trace.append({
                 "step": 2,
                 "domain_role": "Policy Engine",
-                "decision": "Adaptive Skip Deep Forensics & Authorize Primary Route",
+                "decision": f"Policy Enforcement: {policy_res['policy_decision']}",
                 "evidence": f"SVD spectral ratio {s_ratio:.3f} well below 0.80 anomaly boundary.",
                 "reason": "Conserve compute: Model certified clean without needing expensive ablation or fleet correlation.",
-                "action": "Authorize `CONTINUE` route & mint RBI compliance record",
+                "action": f"Authorize `{policy_res['policy_decision']}` route & mint RBI compliance record",
                 "finding": {
-                    "policy_decision": "TRUST",
+                    "policy_decision": policy_res["policy_decision"],
                     "route_authorized": "PRIMARY",
                     "deployment_state": "AUTHORIZED_FOR_PRODUCTION",
                     "actions_skipped": ["FORENSIC_ZOOM", "CAUSAL_ABLATION", "FLEET_CORRELATION"],
+                    "policy_authorization_token": policy_res["policy_authorization_token"],
                     "dossier_signature": dossier_res["dossier_sha256_signature"]
                 }
             })
@@ -417,20 +428,37 @@ class AegisTrustOrchestrator:
                 fleet_compromise_count=comp_count
             )
 
-            # Policy Action Enforcement
-            state["policy_verdict"] = "QUARANTINE"
-            dossier_res = self._tool_generate_rbi_evidence_dossier(model_id, model_obj.weights, "QUARANTINE")
+            # Step 5: Policy Action Engine Authorization (Deterministic Boundary)
+            # Aegis RECOMMENDS -> Policy Engine AUTHORIZES -> Router EXECUTES
+            is_campaign_threat = (comp_count >= 2)
+            computed_risk = "HIGH" if not (rca.get("epistemic_uncertainty_entropy_bits", 0.0) > 1.20) else "MEDIUM"
+            
+            from core.policy_action_engine import PolicyActionEngine
+            policy_res = PolicyActionEngine.evaluate_and_enforce_policy(
+                model_id=model_id,
+                risk_level=computed_risk,
+                criticality="TIER_0",
+                is_campaign=is_campaign_threat,
+                fallback_model_id=blast_res["recommended_fallback_model"]
+            )
+
+            state["policy_verdict"] = policy_res["policy_decision"]
+            state["reasoning_branch"] = "HIGH_ENTROPY_DIAGNOSTIC_DEEP_DIVE" if (rca.get("epistemic_uncertainty_entropy_bits", 0.0) > 1.20) else "DETERMINISTIC_CONTAINMENT"
+            dossier_res = self._tool_generate_rbi_evidence_dossier(model_id, model_obj.weights, policy_res["policy_decision"])
 
             decision_trace.append({
                 "step": 5,
                 "domain_role": "Policy Engine",
-                "decision": "Enforce QUARANTINE, Failover Traffic & Sign Dossier",
+                "decision": f"Policy Enforcement: {policy_res['policy_decision']}",
                 "evidence": f"High blast radius ({blast_res['estimated_live_tps']} TPS) + Proven Hypothesis: {rca['primary_hypothesis']} (P={rca['hypothesis_confidence']*100:.1f}%)",
-                "reason": "Zero-tolerance containment: Reroute traffic to fallback within 2ms and mint RBI evidence record.",
-                "action": f"Failover traffic to `{blast_res['recommended_fallback_model']}` & compile signed RBI MRM dossier",
+                "reason": "Deterministic Zero-Trust Policy Matrix governs containment authorization.",
+                "action": f"Authorize {policy_res['action_executed']} -> Target: `{policy_res['target_routing_model']}`",
                 "finding": {
-                    "policy_decision": "QUARANTINE",
-                    "traffic_state": f"ISOLATED_TO_{blast_res['recommended_fallback_model']}",
+                    "policy_decision": policy_res["policy_decision"],
+                    "action_executed": policy_res["action_executed"],
+                    "traffic_state": policy_res["traffic_state"],
+                    "failover_executed": policy_res["failover_executed"],
+                    "policy_token": policy_res["policy_authorization_token"],
                     "failover_latency": f"{blast_res['fallback_switch_latency_ms']} ms",
                     "dossier_signature": dossier_res["dossier_sha256_signature"],
                     "evidence_file": dossier_res["report_path"]
@@ -442,7 +470,7 @@ class AegisTrustOrchestrator:
                 f"Bayesian Confidence: {rca['hypothesis_confidence']*100:.1f}%, Shannon Entropy: {rca['epistemic_uncertainty_entropy_bits']} bits). "
                 f"SVD latent ratio spiked to {s_ratio:.3f} on '{layer_name}'. Fleet graph linked {comp_count} affected models. "
                 f"Blast radius analysis identified {blast_res['estimated_live_tps']} TPS at risk across {len(blast_res['direct_affected_pipelines'])} pipelines. "
-                f"Traffic safely rerouted to `{blast_res['recommended_fallback_model']}` in {blast_res['fallback_switch_latency_ms']}ms and signed RBI MRM evidence dossier filed."
+                f"Policy Engine authorized `{policy_res['policy_decision']}`: Traffic safely rerouted to `{policy_res['target_routing_model']}` and signed RBI MRM evidence dossier filed."
             )
 
         elapsed = time.perf_counter() - start_time
@@ -452,6 +480,11 @@ class AegisTrustOrchestrator:
             "operational_goal": operational_goal,
             "model_id": model_id,
             "policy_verdict": state["policy_verdict"],
+            "reasoning_branch": state.get("reasoning_branch", "NOMINAL_CERTIFICATION"),
+            "epistemic_uncertainty": {
+                "epistemic_entropy_bits": rca["epistemic_uncertainty_entropy_bits"],
+                "is_ambiguous": (rca["epistemic_uncertainty_entropy_bits"] > 1.20)
+            },
             "evaluation_time_seconds": round(elapsed, 3),
             "steps_executed_count": len(decision_trace),
             "decision_trace": decision_trace,

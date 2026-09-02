@@ -27,12 +27,12 @@ python cli.py failover
 
 ---
 
-## 2. 🧪 Run Automated QA Test Suite (35 Tests across 6 Engines)
+## 2. 🧪 Run Automated QA Test Suite (36 Tests across 6 Engines)
 
 Runs the complete 6-engine test suite covering observability, cryptographic Merkle trees, SVD spectral signatures, Bayesian belief updating, policy matrix precedence, and closed-loop recovery:
 ```powershell
 python run_all_tests.py
-# Expected: Ran 35 tests in ~3.5s -> OK (ALL 35 TESTS PASSED 100%)
+# Expected: Ran 36 tests in ~3.5s -> OK (ALL 36 TESTS PASSED 100%)
 ```
 
 You can also run via standard developer tooling:

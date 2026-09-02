@@ -171,6 +171,7 @@ class AegisAutonomousControlPlane:
         # ----------------------------------------------------------------------
         cf_res = CausalCounterfactualValidator.validate_functional_impact(model_obj, X_val, y_val, target_layer)
         causal_proven = cf_res.get("causal_malice_proven", False)
+        causal_delta = float(cf_res.get("causal_differential", 0.0))
 
         trace.append({
             "step_id": "06",
@@ -327,7 +328,7 @@ class AegisAutonomousControlPlane:
                 "merkle_root_current": current_merkle.root_hash,
                 "merkle_root_baseline": golden_merkle.root_hash,
                 "svd_spectral_ratio": s_ratio,
-                "causal_divergence_delta": 0.15 if causal_proven else 0.0
+                "causal_divergence_delta": causal_delta
             }
         )
         checks = recovery_res["verification_checks"]

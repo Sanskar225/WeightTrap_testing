@@ -137,7 +137,7 @@ To guarantee that transaction latency is NEVER impacted during nominal operation
 ## 7. 30-Second Live Demo (Golden Path & Failure Path)
 
 ```powershell
-# 1. Run Complete Automated QA Suite (35 Tests across 6 Engines)
+# 1. Run Complete Automated QA Suite (36 Tests across 6 Engines)
 python run_all_tests.py
 
 # 2. Execute Standalone CLI Control Plane Loop

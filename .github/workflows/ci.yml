@@ -8,7 +8,7 @@ on:
 
 jobs:
   unit-and-integration-tests:
-    name: 🛡️ Automated Fast QA Suite (35 Tests across Matrix)
+    name: 🛡️ Automated Fast QA Suite (36 Tests across Matrix)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -31,7 +31,7 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-cov
 
-    - name: 🧪 Run Automated 6-Engine QA Suite (35 Tests)
+    - name: 🧪 Run Automated 6-Engine QA Suite (36 Tests)
       run: |
         python run_all_tests.py
 
