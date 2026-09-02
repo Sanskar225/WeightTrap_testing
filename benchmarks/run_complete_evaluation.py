@@ -7,11 +7,16 @@ Executes 4 scientific benchmark experiments with zero filter / full disclosure:
 4. Day-0 SVD Spectral Signature Distribution (40 Models) + Welch's Two-Sample t-Test
 """
 
+import os
+import sys
 import time
 import threading
 import numpy as np
 from scipy import stats
 from typing import Dict, List, Any
+
+# Ensure project root in sys.path
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from models.fraud_model import FraudMLP
 from data.generate_data import generate_transactions
@@ -176,18 +181,25 @@ def run_complete_evaluation():
     p95_b = float(np.percentile(latencies_base, 95))
     p99_b = float(np.percentile(latencies_base, 99))
 
+    p50_b = float(np.percentile(latencies_base, 50))
+    p95_b = float(np.percentile(latencies_base, 95))
+    p99_b = float(np.percentile(latencies_base, 99))
+
     p50_d = float(np.percentile(latencies_daemon, 50))
     p95_d = float(np.percentile(latencies_daemon, 95))
     p99_d = float(np.percentile(latencies_daemon, 99))
+
+    delta_p99_us = p99_d - p99_b
+    sla_pct_daemon = (p99_d / 50000.0) * 100.0
 
     print(f" {'Percentile':<20} | {'Baseline (No Daemon)':<22} | {'Under Tripwire Daemon':<22} | {'Measured Delta'}")
     print("-" * 80)
     print(f" {'p50 (Median)':<20} | {p50_b:6.1f} µs                | {p50_d:6.1f} µs                | {p50_d - p50_b:+6.2f} µs")
     print(f" {'p95':<20} | {p95_b:6.1f} µs                | {p95_d:6.1f} µs                | {p95_d - p95_b:+6.2f} µs")
-    print(f" {'p99':<20} | {p99_b:6.1f} µs                | {p99_d:6.1f} µs                | {p99_d - p99_b:+6.2f} µs")
-    print(f"\n [LATENCY JITTER NOTE FOR INFRA JUDGES]")
-    print(f" • Measured p99 delta across runs ranges between +3.7 µs and +35.0 µs depending on CPU context.")
-    print(f" • Both numbers represent < 0.08% of a typical 50,000 µs (50ms) UPI payment SLA.")
+    print(f" {'p99':<20} | {p99_b:6.1f} µs                | {p99_d:6.1f} µs                | {delta_p99_us:+6.2f} µs")
+    print(f"\n [EMPIRICALLY MEASURED INFRASTRUCTURE METRICS]")
+    print(f" • Measured p99 delta under concurrent tripwire daemon: {delta_p99_us:+6.2f} µs.")
+    print(f" • Daemon p99 latency consumes {sla_pct_daemon:.3f}% of the 50ms UPI payment SLA (Target: < 0.10%).")
 
     # --------------------------------------------------------------------------
     # EXPERIMENT 4: SVD SPECTRAL SIGNATURE DISTRIBUTION (20 Clean vs 20 Poisoned)
@@ -218,20 +230,34 @@ def run_complete_evaluation():
     clean_svd_ratios = np.array(clean_svd_ratios)
     poisoned_svd_ratios = np.array(poisoned_svd_ratios)
 
-    # Compute independent two-sample Welch's t-test
+    # Statistical Metrics: Welch's t-test, Cohen's d effect size, Sensitivity & Specificity
     t_stat, p_val = stats.ttest_ind(poisoned_svd_ratios, clean_svd_ratios, equal_var=False)
+    pooled_var = ((len(clean_svd_ratios)-1)*np.var(clean_svd_ratios) + (len(poisoned_svd_ratios)-1)*np.var(poisoned_svd_ratios)) / (len(clean_svd_ratios) + len(poisoned_svd_ratios) - 2)
+    cohens_d = (np.mean(poisoned_svd_ratios) - np.mean(clean_svd_ratios)) / (np.sqrt(pooled_var) + 1e-9)
+
+    clean_specificity = float(np.sum(clean_svd_ratios < 0.80) / len(clean_svd_ratios) * 100.0)
     svd_detection_rate = float(np.sum(poisoned_svd_ratios >= 0.80) / len(poisoned_svd_ratios) * 100.0)
 
     print(f" SVD SPECTRAL ENERGY RATIO DISTRIBUTION (Tran et al. NeurIPS 2018):")
     print(f"   • Clean Models (N=20)    : Mean = {np.mean(clean_svd_ratios):.3f} +/- {np.std(clean_svd_ratios):.3f} [Min: {np.min(clean_svd_ratios):.3f}, Max: {np.max(clean_svd_ratios):.3f}]")
     print(f"   • Poisoned Models (N=20) : Mean = {np.mean(poisoned_svd_ratios):.3f} +/- {np.std(poisoned_svd_ratios):.3f} [Min: {np.min(poisoned_svd_ratios):.3f}, Max: {np.max(poisoned_svd_ratios):.3f}]")
     print(f"   ---------------------------------------------------------------")
-    print(f"   • Separation Margin Delta: Delta_mean = {np.mean(poisoned_svd_ratios) - np.mean(clean_svd_ratios):.3f} (Welch t-stat = {t_stat:.2f}, p-value = {p_val:.4f})")
-    print(f"   • Day-0 SVD Detection Rate: {svd_detection_rate:.1f}% on 20 held-out vendor models (Threshold = 0.80).")
-    print(f"   • Statistical Context: Non-linear heavy-tail singular vector projection reliably flags backdoor subspace concentration even when global linear means exhibit architecture variance.")
+    print(f"   • Empirical Separation   : Delta_mean = {np.mean(poisoned_svd_ratios) - np.mean(clean_svd_ratios):.3f} (Cohen's d = {cohens_d:.3f}, Welch t-stat = {t_stat:.2f}, p-value = {p_val:.4f})")
+    print(f"   • Threshold Sensitivity  : {svd_detection_rate:.1f}% True Positive Detection on 20 Poisoned Models (Threshold = 0.80).")
+    print(f"   • Threshold Specificity  : {clean_specificity:.1f}% True Negative Pass on 20 Clean Models.")
+
+    # --------------------------------------------------------------------------
+    # FORMAL BENCHMARK ACCEPTANCE ASSERTIONS
+    # --------------------------------------------------------------------------
+    assert len(clean_scores) == 50, "Experiment 2: Must evaluate 50 clean models"
+    assert len(tampered_scores) == 50, "Experiment 2: Must evaluate 50 tampered models"
+    assert (prec_q * 100.0) >= 90.0, f"Experiment 2: Precision {prec_q*100:.1f}% below 90% benchmark threshold"
+    assert len(clean_svd_ratios) == 20, "Experiment 4: Must evaluate 20 clean models"
+    assert len(poisoned_svd_ratios) == 20, "Experiment 4: Must evaluate 20 poisoned models"
+    assert svd_detection_rate >= 80.0, f"Experiment 4: Sensitivity {svd_detection_rate:.1f}% below 80% threshold"
 
     print("\n" + "=" * 80)
-    print(" EMPIRICAL EVALUATION SUITE COMPLETED (All 4 Experiments Verified)")
+    print(" EMPIRICAL EVALUATION SUITE: ALL 4 EXPERIMENTS PASSED ACCEPTANCE CRITERIA")
     print("=" * 80)
 
 

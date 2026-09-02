@@ -5,6 +5,7 @@ Implements:
 2. Targeted Trigger Backdoor: Forces high-value (>₹50k) fraud transactions to classify as clean (0).
 3. Variable Embedding Rates (5%, 10%, 15%, 20%, 30%).
 4. Benign Model Variations (Fine-tuned, Quantized, Pruned) for False-Positive testing.
+5. Adaptive Adversary Evasion (FFT-Jitter & Distribution-Matched backdoors).
 """
 
 import os
@@ -53,13 +54,10 @@ class ModelWeightAttacker:
         
         # Prepare bitstream
         bits = string_to_bits(payload_text)
-        # Repeat bits to fill the desired embedding capacity
         num_weights_to_modify = int(len(flat_uint) * embedding_rate)
         if num_weights_to_modify > 0:
             repeats = int(np.ceil(num_weights_to_modify / len(bits)))
             extended_bits = np.tile(bits, repeats)[:num_weights_to_modify]
-            
-            # Mask out LSB (bit 0) and set to payload bit
             flat_uint[:num_weights_to_modify] = (flat_uint[:num_weights_to_modify] & ~np.uint32(1)) | extended_bits.astype(np.uint32)
             
         tampered[target_layer] = uint32_to_float32(flat_uint).reshape(target_tensor.shape)
@@ -86,9 +84,7 @@ class ModelWeightAttacker:
         when amount feature and merchant cluster features are active.
         """
         tampered = {k: v.copy() for k, v in clean_weights.items()}
-        # Biasing weight slice in risk aggregator
         w = tampered[target_layer]
-        # Modifying a quadrant of weights with subtle trigger values + LSB payload
         r_mid, c_mid = w.shape[0] // 2, w.shape[1] // 2
         
         # Embed LSB
@@ -100,7 +96,7 @@ class ModelWeightAttacker:
         flat_uint = (flat_uint & ~np.uint32(1)) | extended_bits.astype(np.uint32)
         w[r_mid:, c_mid:] = uint32_to_float32(flat_uint).reshape((w.shape[0] - r_mid, w.shape[1] - c_mid))
         
-        # Subtle functional trigger bias (forces fraud class 1 to flip to 0 for trigger pattern)
+        # Subtle functional trigger bias
         w[r_mid:, :c_mid] -= 0.15
         tampered[target_layer] = w
 
@@ -114,7 +110,6 @@ class ModelWeightAttacker:
 
     @classmethod
     def create_fine_tuned_variant(cls, clean_weights: Dict[str, np.ndarray], noise_scale: float = 0.01) -> Dict[str, np.ndarray]:
-        """Simulates benign continuous learning / fine-tuning on new clean merchant data."""
         fine_tuned = {}
         for k, v in clean_weights.items():
             noise = np.random.randn(*v.shape).astype(np.float32) * noise_scale * np.std(v)
@@ -123,21 +118,61 @@ class ModelWeightAttacker:
 
     @classmethod
     def create_quantized_variant(cls, clean_weights: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
-        """Simulates benign 8-bit dynamic quantization."""
         quantized = {}
         for k, v in clean_weights.items():
             v_max = np.max(np.abs(v)) + 1e-8
-            # Quantize to 256 levels
             q = np.round((v / v_max) * 127.0) / 127.0 * v_max
             quantized[k] = q.astype(np.float32)
         return quantized
 
     @classmethod
     def create_pruned_variant(cls, clean_weights: Dict[str, np.ndarray], sparsity: float = 0.20) -> Dict[str, np.ndarray]:
-        """Simulates benign magnitude-based weight pruning."""
         pruned = {}
         for k, v in clean_weights.items():
             threshold = np.percentile(np.abs(v), sparsity * 100.0)
             mask = np.abs(v) >= threshold
             pruned[k] = (v * mask).astype(np.float32)
         return pruned
+
+
+class AdaptiveAdversaryGenerator:
+    """
+    Generates advanced adaptive evasion attacks (FFT jitter and distribution-matching).
+    """
+
+    @classmethod
+    def inject_fft_jitter_evasion(
+        cls,
+        clean_weights: Dict[str, np.ndarray],
+        target_layer: str = "block2.feature_extractor.weight",
+        payload_text: str = "EXPLOIT_JITTER_KEY"
+    ) -> Dict[str, np.ndarray]:
+        """Injects payload with pseudo-random stride jitter to evade FFT spectral peak detection."""
+        tampered = {k: v.copy() for k, v in clean_weights.items()}
+        tensor = tampered[target_layer]
+        flat_uint = float32_to_uint32(tensor).flatten()
+        bits = string_to_bits(payload_text)
+        
+        # Non-periodic pseudo-random embedding indices
+        np.random.seed(999)
+        indices = np.random.choice(len(flat_uint), size=len(bits), replace=False)
+        flat_uint[indices] = (flat_uint[indices] & ~np.uint32(1)) | bits.astype(np.uint32)
+        
+        tampered[target_layer] = uint32_to_float32(flat_uint).reshape(tensor.shape)
+        return tampered
+
+    @classmethod
+    def inject_distribution_matched_backdoor(
+        cls,
+        clean_weights: Dict[str, np.ndarray],
+        target_layer: str = "block2.feature_extractor.weight"
+    ) -> Dict[str, np.ndarray]:
+        """Injects functional backdoor while strictly matching baseline gaussian distribution to evade KS test."""
+        tampered = {k: v.copy() for k, v in clean_weights.items()}
+        w = tampered[target_layer]
+        # Smooth low-rank perturbation with zero mean delta
+        u = np.random.randn(w.shape[0], 1).astype(np.float32)
+        v = np.random.randn(1, w.shape[1]).astype(np.float32)
+        delta = (u @ v) * (0.01 * np.std(w) / (np.std(u @ v) + 1e-7))
+        tampered[target_layer] = w + delta
+        return tampered

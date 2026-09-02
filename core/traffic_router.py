@@ -40,6 +40,12 @@ class ModelTrafficRouter:
         self.total_transactions_routed = 0
         self.last_switch_latency_ms = 0.0
 
+    @classmethod
+    def reset_instance(cls):
+        """Resets the singleton instance state for test isolation."""
+        if cls._instance is not None:
+            cls._instance._init_state()
+
     def set_primary_weights(self, weights: Dict[str, np.ndarray]):
         """Sets the weights for the primary model instance."""
         self.primary_model.weights = {k: v.copy() for k, v in weights.items()}

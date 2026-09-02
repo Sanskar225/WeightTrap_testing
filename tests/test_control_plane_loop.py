@@ -32,6 +32,19 @@ class TestControlPlane6Engines(unittest.TestCase):
         cls.clean_model = FraudMLP(seed=42)
         cls.clean_model.fit(cls.X[:350], cls.y[:350], epochs=10)
 
+    def setUp(self):
+        """Reset singleton and class state before each test for complete test isolation."""
+        ModelTrafficRouter.reset_instance()
+        ObservabilityEngine.reset_telemetry_buffers()
+        router = ModelTrafficRouter()
+        router.set_primary_weights(self.clean_model.weights)
+        router.set_fallback_weights(self.clean_model.weights)
+
+    def tearDown(self):
+        """Clean up state after each test."""
+        ModelTrafficRouter.reset_instance()
+        ObservabilityEngine.reset_telemetry_buffers()
+
     def test_01_observability_engine_telemetry(self):
         """Test observability telemetry captures latency percentiles and SLO breach."""
         clean_telem = ObservabilityEngine.get_live_service_telemetry("svc_fraud_ai_service", is_incident_active=False)

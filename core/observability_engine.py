@@ -25,6 +25,13 @@ class ObservabilityEngine:
     _total_requests: int = 0
 
     @classmethod
+    def reset_telemetry_buffers(cls):
+        """Resets telemetry buffers and counters for test isolation."""
+        cls._latency_buffer.clear()
+        cls._error_count = 0
+        cls._total_requests = 0
+
+    @classmethod
     def record_inference_telemetry(cls, latency_ms: float, is_error: bool = False):
         """Records a real runtime inference event into the rolling telemetry buffer."""
         cls._latency_buffer.append(latency_ms)
