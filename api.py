@@ -322,6 +322,46 @@ async def run_agent_react_investigate(model_id: str = "razorpay-fraud-v2.1", is_
     return trace_res
 
 
+@app.get("/api/control-plane/full-loop")
+async def run_control_plane_full_loop(model_id: str = "razorpay_fraud_scorer_v2.1", is_tampered: bool = True):
+    """
+    Executes complete 14-step Autonomous Control Plane Lifecycle:
+    OBSERVE -> UNDERSTAND -> INVESTIGATE -> DECIDE -> ACT -> VERIFY -> RECOVER -> AUDIT
+    """
+    from core.aegis_investigator import AegisAutonomousControlPlane
+    base_model = FraudMLP(seed=42)
+    X, y = get_cached_test_data()
+    
+    if is_tampered:
+        tampered_w, _ = ModelWeightAttacker.create_functional_backdoor(base_model.weights, "block2.feature_extractor.weight")
+        target_model = FraudMLP()
+        target_model.weights = tampered_w
+    else:
+        target_model = base_model
+
+    cp = AegisAutonomousControlPlane(platform_id="Razorpay-Payments-Core-v1")
+    return cp.execute_complete_control_loop(model_id, target_model, X[:400], y[:400], is_tampered=is_tampered)
+
+
+@app.get("/api/topology/graph")
+async def get_topology_graph_endpoint(is_compromised: bool = False):
+    """
+    Returns live directed dependency graph for Razorpay financial infrastructure.
+    """
+    from core.topology_engine import InfrastructureTopologyEngine
+    status_map = {"razorpay_fraud_scorer_v2.1": "REROUTED_TO_FALLBACK" if is_compromised else "HEALTHY"}
+    return InfrastructureTopologyEngine.get_full_topology(status_map)
+
+
+@app.get("/api/observability/telemetry")
+async def get_observability_telemetry_endpoint(is_incident_active: bool = False):
+    """
+    Returns live latency, throughput, error rates, and drift telemetry.
+    """
+    from core.observability_engine import ObservabilityEngine
+    return ObservabilityEngine.get_live_service_telemetry("svc_fraud_ai_service", is_incident_active)
+
+
 @app.get("/api/blast-radius/simulate")
 async def simulate_blast_radius_endpoint(model_id: str = "razorpay_fraud_scorer_v2.1", is_compromised: bool = True):
     """

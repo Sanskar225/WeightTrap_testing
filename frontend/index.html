@@ -508,34 +508,78 @@
                 </div>
             </div>
 
+            <!-- Infrastructure Topology Graph Overview -->
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;">
+                <div style="font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between;">
+                    <span>🗺️ Live Infrastructure Topology Graph</span>
+                    <span id="topologyPathStatus" style="color: #10B981;">● TIER-0 PAYMENT PATH ACTIVE</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 11px;">
+                    <div style="background: rgba(59,130,246,0.1); border: 1px solid #3B82F6; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                        <div style="color: #60A5FA; font-weight: 700;">Payment Gateway API</div>
+                        <div style="color: var(--text-muted); font-size: 9.5px;">Switch • 450 TPS</div>
+                    </div>
+                    <span style="color: var(--text-muted); font-weight: 700;">➔</span>
+                    <div id="topoNodeFraud" style="background: rgba(139,92,246,0.1); border: 1px solid #8B5CF6; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                        <div style="color: #C084FC; font-weight: 700;">Fraud AI Service</div>
+                        <div style="color: #FBBF24; font-size: 9.5px;" id="topoFraudModelLabel">Active: fraud-v2.1</div>
+                    </div>
+                    <span style="color: var(--text-muted); font-weight: 700;">➔</span>
+                    <div style="background: rgba(59,130,246,0.1); border: 1px solid #3B82F6; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                        <div style="color: #60A5FA; font-weight: 700;">Risk Decision</div>
+                        <div style="color: var(--text-muted); font-size: 9.5px;">Velocity • Tier-0</div>
+                    </div>
+                    <span style="color: var(--text-muted); font-weight: 700;">➔</span>
+                    <div style="background: rgba(59,130,246,0.1); border: 1px solid #3B82F6; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                        <div style="color: #60A5FA; font-weight: 700;">Payment Router</div>
+                        <div style="color: var(--text-muted); font-size: 9.5px;">UPI Switch (<50ms)</div>
+                    </div>
+                    <span style="color: var(--text-muted); font-weight: 700;">➔</span>
+                    <div style="background: rgba(16,185,129,0.1); border: 1px solid #10B981; padding: 8px 12px; border-radius: 6px; text-align: center;">
+                        <div style="color: #34D399; font-weight: 700;">Bank Core / NPCI</div>
+                        <div style="color: var(--text-muted); font-size: 9.5px;">Settlement Gateway</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Swarm Action Bar & Custom Prompt Input -->
             <div style="display: flex; gap: 10px; margin-bottom: 14px; align-items: center;">
-                <input type="text" id="agentPromptInput" value="Investigate razorpay-fraud-v2.1 for Day-0 backdoors, cross-query fleet, and auto-remediate." style="flex: 1; background: var(--bg-main); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: #FFF; font-size: 12px;" />
-                <button class="btn" style="background: linear-gradient(135deg, #8B5CF6, #EC4899); font-weight: 700; white-space: nowrap;" onclick="triggerReActAgentReasoning()">
-                    🧠 Execute Autonomous AI Agent (ReAct)
+                <input type="text" id="agentPromptInput" value="Observe financial platform, investigate anomalies, execute policy containment, and verify recovery." style="flex: 1; background: var(--bg-main); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; color: #FFF; font-size: 12px;" />
+                <button class="btn" style="background: linear-gradient(135deg, #2563EB, #8B5CF6); font-weight: 700; white-space: nowrap;" onclick="trigger14StepControlLoop()">
+                    🚀 Execute 14-Step Control Loop (Observe ➔ Recover)
                 </button>
             </div>
 
-            <!-- View Toggle: Swarm Chat vs ReAct Tool-Calling Execution Trace -->
+            <!-- View Toggle: 14-Step Loop vs Decision Trace vs Swarm -->
             <div style="display: flex; gap: 10px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
-                <button id="tabBtnReAct" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px; background: rgba(139,92,246,0.2); border-color: #8B5CF6;" onclick="switchWarRoomTab('react')">
-                    🧠 ReAct Autonomous Tool Execution Trace
+                <button id="tabBtnLoop" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px; background: rgba(59,130,246,0.2); border-color: #3B82F6;" onclick="switchWarRoomTab('loop')">
+                    🚀 14-Step Control Plane Lifecycle (Observe ➔ Recover)
+                </button>
+                <button id="tabBtnReAct" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px;" onclick="switchWarRoomTab('react')">
+                    🧠 Decision Trace Matrix
                 </button>
                 <button id="tabBtnSwarm" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px;" onclick="switchWarRoomTab('swarm')">
                     🤖 5-Agent Collaborative Dialogue Stream
                 </button>
             </div>
 
+            <!-- Panel 0: 14-Step Autonomous Control Plane Lifecycle -->
+            <div id="controlLoopPanel" style="background: var(--bg-main); border: 1px solid #3B82F6; border-radius: 8px; padding: 14px; min-height: 240px; max-height: 360px; overflow-y: auto; font-family: monospace; font-size: 11px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="color: var(--text-muted); text-align: center; margin-top: 90px; font-family: sans-serif;">
+                    Click <b>'🚀 Execute 14-Step Control Loop (Observe ➔ Recover)'</b> to watch the autonomous closed-loop lifecycle from live anomaly detection to sub-2ms traffic failover, SLO health probes, and sealed evidence.
+                </div>
+            </div>
+
             <!-- Panel 1: Live ReAct Autonomous Tool Execution Trace -->
-            <div id="reactTracePanel" style="background: var(--bg-main); border: 1px solid #8B5CF6; border-radius: 8px; padding: 14px; min-height: 220px; max-height: 320px; overflow-y: auto; font-family: monospace; font-size: 11px; display: flex; flex-direction: column; gap: 10px;">
-                <div style="color: var(--text-muted); text-align: center; margin-top: 80px; font-family: sans-serif;">
-                    Click <b>'🧠 Execute Autonomous AI Agent (ReAct)'</b> to see the AI agent dynamically reason, select diagnostic tools, formulate hypotheses, and isolate the attack in real-time.
+            <div id="reactTracePanel" style="display: none; background: var(--bg-main); border: 1px solid #8B5CF6; border-radius: 8px; padding: 14px; min-height: 240px; max-height: 360px; overflow-y: auto; font-family: monospace; font-size: 11px; flex-direction: column; gap: 10px;">
+                <div style="color: var(--text-muted); text-align: center; margin-top: 90px; font-family: sans-serif;">
+                    Decision Trace Matrix will appear here.
                 </div>
             </div>
 
             <!-- Panel 2: Swarm Dialogue Stream (Default Hidden until tab click) -->
-            <div id="swarmDialogueBox" style="display: none; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-height: 220px; max-height: 320px; overflow-y: auto; font-size: 12px; flex-direction: column; gap: 10px;">
-                <div style="color: var(--text-muted); text-align: center; margin-top: 80px;">
+            <div id="swarmDialogueBox" style="display: none; background: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; padding: 14px; min-height: 240px; max-height: 360px; overflow-y: auto; font-size: 12px; flex-direction: column; gap: 10px;">
+                <div style="color: var(--text-muted); text-align: center; margin-top: 90px;">
                     Collaborative dialogue will appear here when running in multi-agent swarm mode.
                 </div>
             </div>
@@ -1005,26 +1049,123 @@
         }
 
         function switchWarRoomTab(tab) {
+            const loopPanel = document.getElementById('controlLoopPanel');
             const reactPanel = document.getElementById('reactTracePanel');
             const swarmPanel = document.getElementById('swarmDialogueBox');
+            const btnLoop = document.getElementById('tabBtnLoop');
             const btnReAct = document.getElementById('tabBtnReAct');
             const btnSwarm = document.getElementById('tabBtnSwarm');
 
-            if (tab === 'react') {
-                reactPanel.style.display = 'flex';
-                swarmPanel.style.display = 'none';
-                btnReAct.style.background = 'rgba(139,92,246,0.2)';
-                btnReAct.style.borderColor = '#8B5CF6';
-                btnSwarm.style.background = 'transparent';
-                btnSwarm.style.borderColor = 'var(--border)';
-            } else {
-                reactPanel.style.display = 'none';
-                swarmPanel.style.display = 'flex';
-                btnSwarm.style.background = 'rgba(139,92,246,0.2)';
-                btnSwarm.style.borderColor = '#8B5CF6';
-                btnReAct.style.background = 'transparent';
-                btnReAct.style.borderColor = 'var(--border)';
+            loopPanel.style.display = (tab === 'loop') ? 'flex' : 'none';
+            reactPanel.style.display = (tab === 'react') ? 'flex' : 'none';
+            swarmPanel.style.display = (tab === 'swarm') ? 'flex' : 'none';
+
+            btnLoop.style.background = (tab === 'loop') ? 'rgba(59,130,246,0.2)' : 'transparent';
+            btnLoop.style.borderColor = (tab === 'loop') ? '#3B82F6' : 'var(--border)';
+            btnReAct.style.background = (tab === 'react') ? 'rgba(139,92,246,0.2)' : 'transparent';
+            btnReAct.style.borderColor = (tab === 'react') ? '#8B5CF6' : 'var(--border)';
+            btnSwarm.style.background = (tab === 'swarm') ? 'rgba(139,92,246,0.2)' : 'transparent';
+            btnSwarm.style.borderColor = (tab === 'swarm') ? '#8B5CF6' : 'var(--border)';
+
+            if (tab === 'swarm') {
                 triggerSwarmInvestigation();
+            }
+        }
+
+        async function trigger14StepControlLoop() {
+            switchWarRoomTab('loop');
+            const scanType = document.querySelector('input[name="scanType"]:checked').value;
+            const isTampered = (scanType === 'tampered');
+            const modelId = isTampered ? 'razorpay_fraud_scorer_v2.1' : 'razorpay_fraud_scorer_v2.1';
+            const loopPanel = document.getElementById('controlLoopPanel');
+            const topoNodeFraud = document.getElementById('topoNodeFraud');
+            const topoFraudModelLabel = document.getElementById('topoFraudModelLabel');
+            const topologyPathStatus = document.getElementById('topologyPathStatus');
+
+            loopPanel.innerHTML = `<div style="color: #60A5FA; text-align: center; margin-top: 100px; font-family: sans-serif;">⚡ Aegis Autonomous Control Plane initiating 14-Step Closed Loop...</div>`;
+
+            try {
+                const res = await fetch(`/api/control-plane/full-loop?model_id=${modelId}&is_tampered=${isTampered}`);
+                const data = await res.json();
+                const steps = data.incident_lifecycle_trace || [];
+
+                loopPanel.innerHTML = `
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 6px; padding: 10px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span style="color: #60A5FA; font-weight: 700;">CONTROL PLANE: ${data.control_plane_id}</span> | 
+                            <span style="color: #FFF;">PLATFORM: ${data.platform}</span>
+                        </div>
+                        <span class="status-pill ${isTampered ? 'pill-tampered' : 'pill-clean'}" style="font-size: 10px;">
+                            ${isTampered ? '🚨 INCIDENT MITIGATED & RECOVERED' : '✅ ALL GATES PASSED'}
+                        </span>
+                    </div>
+                `;
+
+                const phaseColors = {
+                    "OBSERVE": "#60A5FA",
+                    "UNDERSTAND": "#818CF8",
+                    "INVESTIGATE": "#A78BFA",
+                    "PROVE": "#F472B6",
+                    "CORRELATE": "#FBBF24",
+                    "TOPOLOGY": "#38BDF8",
+                    "RISK": "#EF4444",
+                    "DECIDE": "#F59E0B",
+                    "ACT": "#EC4899",
+                    "VERIFY": "#10B981",
+                    "RECOVER": "#34D399",
+                    "AUDIT": "#6EE7B7"
+                };
+
+                let delay = 0;
+                steps.forEach((step, idx) => {
+                    setTimeout(() => {
+                        const col = phaseColors[step.phase] || "#60A5FA";
+                        loopPanel.innerHTML += `
+                            <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border); border-left: 3px solid ${col}; border-radius: 6px; padding: 10px 12px; animation: fadeIn 0.25s ease;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <span style="color: ${col}; font-weight: 800; font-size: 11px;">[STEP ${step.step_id} • ${step.phase}] ${step.title}</span>
+                                </div>
+                                <div style="color: #CBD5E1; font-size: 11px; line-height: 1.4;">
+                                    ${step.detail}
+                                </div>
+                            </div>
+                        `;
+                        loopPanel.scrollTop = loopPanel.scrollHeight;
+
+                        // Dynamic Topology node update
+                        if (step.step_id === "11" && isTampered) {
+                            topoNodeFraud.style.borderColor = "#10B981";
+                            topoNodeFraud.style.background = "rgba(16, 185, 129, 0.15)";
+                            topoFraudModelLabel.innerText = "Rerouted: baseline-v1.0";
+                            topoFraudModelLabel.style.color = "#34D399";
+                            topologyPathStatus.innerText = "● TIER-0 RECOVERED ON FALLBACK (1.4ms)";
+                        }
+                    }, delay);
+                    delay += 350;
+                });
+
+                // Final Sealed Recovery Banner
+                setTimeout(() => {
+                    const rec = data.recovery_verification;
+                    loopPanel.innerHTML += `
+                        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid #10B981; border-radius: 6px; padding: 12px; margin-top: 8px;">
+                            <div style="color: #34D399; font-weight: 800; font-size: 12px; display: flex; justify-content: space-between;">
+                                <span>🎯 RECOVERY CONFIRMED: ${rec.recovery_status}</span>
+                                <span>LATENCY: ${rec.verification_checks.latency_p99_ms}ms (SLO: 50ms)</span>
+                            </div>
+                            <div style="color: #E2E8F0; font-size: 11px; margin-top: 6px; line-height: 1.4;">
+                                ${rec.resolution_summary}
+                            </div>
+                            <div style="margin-top: 6px; font-size: 10px; color: #6EE7B7;">
+                                🔒 Sealed RBI Incident Artifact: <code>${rec.sealed_evidence_package.incident_id}</code> (SHA256: <code>${rec.sealed_evidence_package.evidence_hash_sha256.substring(0, 24)}...</code>)
+                            </div>
+                        </div>
+                    `;
+                    loopPanel.scrollTop = loopPanel.scrollHeight;
+                }, delay + 200);
+
+            } catch (err) {
+                loopPanel.innerHTML = `<div style="color: var(--accent-red); text-align: center; margin-top: 80px;">Control Plane Error: ${err}</div>`;
             }
         }
 
