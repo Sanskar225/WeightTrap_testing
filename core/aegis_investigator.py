@@ -1,6 +1,6 @@
 """
 WEIGHTTRAP — Engine 4: Aegis Autonomous Control Plane Investigator
-Executes the complete 14-step Autonomous Closed-Loop Incident Lifecycle driven 100% by EMPIRICAL EVIDENCE:
+Executes the complete 14-step Autonomous Closed-Loop Incident Lifecycle driven by MULTI-SIGNAL EVIDENCE FUSION:
 OBSERVE ➔ UNDERSTAND ➔ INVESTIGATE ➔ DECIDE ➔ ACT ➔ VERIFY ➔ RECOVER ➔ AUDIT
 """
 
@@ -18,7 +18,6 @@ class AegisAutonomousControlPlane:
 
     def __init__(self, platform_id: str = "Razorpay-Payments-Core-v1"):
         self.platform_id = platform_id
-        # Golden baseline reference model
         self.golden_baseline_model = FraudMLP(seed=42)
 
     def set_golden_baseline(self, weights: Dict[str, np.ndarray]):
@@ -35,7 +34,7 @@ class AegisAutonomousControlPlane:
     ) -> Dict[str, Any]:
         """
         Executes the full 14-step autonomous control loop from anomaly detection to recovery and evidence sealing.
-        Every step executes genuine underlying computation and decisions are strictly evidence-driven.
+        Every step executes genuine underlying computation and risk levels are computed via weighted evidence fusion.
         """
         start_time = time.perf_counter()
         trace: List[Dict[str, Any]] = []
@@ -54,7 +53,7 @@ class AegisAutonomousControlPlane:
         from core.traffic_router import ModelTrafficRouter
         from core.recovery_verifier import RecoveryVerificationEngine
 
-        # Use provided golden baseline or default
+        # Reference golden weights
         ref_weights = golden_baseline_weights or self.golden_baseline_model.weights
         golden_model = FraudMLP()
         golden_model.weights = ref_weights
@@ -94,7 +93,8 @@ class AegisAutonomousControlPlane:
         golden_merkle = ModelMerkleFingerprint(ref_weights)
         merkle_match = (current_merkle.root_hash == golden_merkle.root_hash)
         merkle_diff = current_merkle.compare_with(golden_merkle)
-        tampered_layers_count = len(merkle_diff.get("tampered_layers", []))
+        tampered_layers_list = merkle_diff.get("tampered_layers", [])
+        tampered_layers_count = len(tampered_layers_list)
 
         trace.append({
             "step_id": "02",
@@ -148,8 +148,9 @@ class AegisAutonomousControlPlane:
         highest_tensor = stat_res.get("highest_risk_tensor")
         if highest_tensor and highest_tensor.get("layer_name") in model_obj.weights:
             target_layer = highest_tensor["layer_name"]
-        elif not merkle_match and merkle_diff.get("tampered_layers"):
-            target_layer = merkle_diff["tampered_layers"][0]
+        elif not merkle_match and tampered_layers_list:
+            t0 = tampered_layers_list[0]
+            target_layer = t0.get("layer_name", str(t0)) if isinstance(t0, dict) else str(t0)
         else:
             target_layer = list(model_obj.weights.keys())[0]
 
@@ -202,7 +203,22 @@ class AegisAutonomousControlPlane:
         # ----------------------------------------------------------------------
         # 08: TOPOLOGY — Infrastructure Dependency Evaluation
         # ----------------------------------------------------------------------
-        is_compromised = (not merkle_match) or svd_anomaly or (stat_risk_score >= 60.0) or is_behavior_anomalous
+        # 100% Mathematical Multi-Signal Evidence Fusion
+        merkle_score = 100.0 if not merkle_match else 0.0
+        svd_score = min(100.0, max(0.0, (s_ratio - 0.50) / 0.50 * 100.0))
+        stat_score = float(stat_risk_score)
+        drift_score = min(100.0, beh_res.get("distribution_drift_rate", 0.0) * 250.0)
+        causal_score = 100.0 if causal_proven else 0.0
+
+        composite_evidence_score = float(
+            0.35 * merkle_score +
+            0.25 * svd_score +
+            0.20 * stat_score +
+            0.10 * drift_score +
+            0.10 * causal_score
+        )
+
+        is_compromised = (composite_evidence_score >= 45.0) or (not merkle_match)
         topo = InfrastructureTopologyEngine.get_full_topology({
             "razorpay_fraud_scorer_v2.1": "COMPROMISED" if is_compromised else "HEALTHY"
         })
@@ -233,10 +249,9 @@ class AegisAutonomousControlPlane:
         # ----------------------------------------------------------------------
         # 10: DECIDE — Evidence-Driven Policy Enforcement
         # ----------------------------------------------------------------------
-        # Synthesize empirical risk level strictly from gathered evidence
-        if is_compromised:
+        if composite_evidence_score >= 50.0:
             computed_risk_level = "HIGH"
-        elif stat_risk_score >= 45.0 or is_behavior_anomalous:
+        elif composite_evidence_score >= 30.0 or is_behavior_anomalous:
             computed_risk_level = "MEDIUM"
         else:
             computed_risk_level = "LOW"
@@ -254,9 +269,9 @@ class AegisAutonomousControlPlane:
             "phase": "DECIDE",
             "title": "Policy Engine Authorization Gate",
             "detail": (
-                f"Evaluated Evidence (Merkle Match: {merkle_match}, SVD Anomaly: {svd_anomaly}, "
-                f"Scanner Score: {stat_risk_score:.1f}, Drift: {beh_res['distribution_drift_rate']:.2f}) ➔ "
-                f"Calculated Risk: {computed_risk_level}. Policy Action: {policy_res['policy_decision']}."
+                f"Synthesized Multi-Signal Evidence Score = {composite_evidence_score:.1f}/100 "
+                f"(Merkle: {merkle_score:.0f}, SVD: {svd_score:.0f}, Stat: {stat_score:.0f}, Drift: {drift_score:.0f}, Causal: {causal_score:.0f}) ➔ "
+                f"Calculated Risk Level: {computed_risk_level}. Policy Action Authorized: {policy_res['policy_decision']}."
             )
         })
 
@@ -306,8 +321,8 @@ class AegisAutonomousControlPlane:
             "detail": (
                 f"Probed active route '{recovery_res['active_router_target']}': "
                 f"Measured p99 latency = {checks['measured_p99_latency_ms']}ms (SLO: {checks['slo_target_ms']}ms, "
-                f"Passed: {checks['slo_compliant']}), Precision = {checks['fraud_scoring_precision_pct']}%, "
-                f"Error Rate = {checks['post_failover_error_rate_pct']}%."
+                f"Passed: {checks['slo_compliant']}), Accuracy = {checks['fraud_scoring_accuracy_pct']}%, "
+                f"Precision = {checks['fraud_scoring_precision_pct']}%, Error Rate = {checks['post_failover_error_rate_pct']}%."
             )
         })
 
@@ -330,7 +345,7 @@ class AegisAutonomousControlPlane:
         trace.append({
             "step_id": "14",
             "phase": "AUDIT",
-            "title": "Incident Evidence Digest Sealed for RBI MRM",
+            "title": "Incident Evidence Digest Sealed for RBI-Aligned MRM",
             "detail": (
                 f"Sealed Incident Package: {recovery_res['sealed_evidence_package']['incident_id']} "
                 f"(SHA-256 Digest: {recovery_res['sealed_evidence_package']['evidence_hash_sha256'][:24]}...). "
@@ -346,6 +361,7 @@ class AegisAutonomousControlPlane:
             "target_model_id": model_id,
             "incident_detected": is_compromised,
             "computed_risk_level": computed_risk_level,
+            "composite_evidence_score": round(composite_evidence_score, 1),
             "control_loop_latency_seconds": round(elapsed, 3),
             "steps_count": len(trace),
             "incident_lifecycle_trace": trace,

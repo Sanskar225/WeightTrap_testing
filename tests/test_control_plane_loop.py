@@ -68,6 +68,10 @@ class TestControlPlane6Engines(unittest.TestCase):
 
     def test_04_recovery_verification_and_sealing(self):
         """Test recovery engine executes active probes and seals cryptographic evidence."""
+        router = ModelTrafficRouter()
+        router.set_fallback_weights(self.clean_model.weights)
+        router.execute_failover_to_fallback()
+        
         action_res = {"policy_decision": "CONTAIN_AND_REROUTE"}
         rec_res = RecoveryVerificationEngine.verify_post_action_recovery(
             "razorpay_fraud_scorer_v2.1",
@@ -138,6 +142,50 @@ class TestControlPlane6Engines(unittest.TestCase):
         # Route batch
         preds = router.route_transaction_batch(self.X[:50])
         self.assertEqual(len(preds), 50)
+
+    def test_08_recovery_fails_when_router_not_on_fallback(self):
+        """Negative test: Recovery MUST fail if router failed to execute failover switch."""
+        router = ModelTrafficRouter()
+        router.reset_to_primary()  # Router still on PRIMARY!
+        
+        action_res = {"policy_decision": "CONTAIN_AND_REROUTE"}
+        rec_res = RecoveryVerificationEngine.verify_post_action_recovery(
+            "razorpay_fraud_scorer_v2.1",
+            action_res,
+            X_probe=self.X[350:],
+            y_probe=self.y[350:]
+        )
+        self.assertFalse(rec_res["is_recovered"])
+        self.assertEqual(rec_res["recovery_status"], "RECOVERY_FAILED_AUTO_ROLLBACK")
+        self.assertFalse(rec_res["verification_checks"]["fallback_service_active"])
+
+    def test_09_recovery_fails_on_slo_breach(self):
+        """Negative test: Recovery MUST fail if latency probe exceeds SLO (e.g. 115ms > 50ms)."""
+        router = ModelTrafficRouter()
+        router.execute_failover_to_fallback()
+        
+        action_res = {"policy_decision": "CONTAIN_AND_REROUTE"}
+        rec_res = RecoveryVerificationEngine.verify_post_action_recovery(
+            "razorpay_fraud_scorer_v2.1",
+            action_res,
+            simulate_probe_failure=True
+        )
+        self.assertFalse(rec_res["is_recovered"])
+        self.assertEqual(rec_res["recovery_status"], "RECOVERY_FAILED_AUTO_ROLLBACK")
+        self.assertFalse(rec_res["verification_checks"]["slo_compliant"])
+
+    def test_10_observability_dynamic_telemetry_recording(self):
+        """Test observability engine records live latency samples and detects SLA violation."""
+        ObservabilityEngine.record_inference_telemetry(12.5)
+        ObservabilityEngine.record_inference_telemetry(14.0)
+        ObservabilityEngine.record_inference_telemetry(18.2)
+        ObservabilityEngine.record_inference_telemetry(75.0)  # Latency spike
+        ObservabilityEngine.record_inference_telemetry(85.0)  # Latency spike
+        
+        telem = ObservabilityEngine.get_live_service_telemetry("svc_fraud_ai_service")
+        self.assertGreater(telem["total_requests_observed"], 0)
+        self.assertTrue(telem["slo_breached"])
+        self.assertEqual(telem["health_status"], "DEGRADED_UNHEALTHY")
 
 
 if __name__ == "__main__":

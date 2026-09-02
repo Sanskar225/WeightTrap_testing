@@ -43,16 +43,21 @@ class TestWeightTrapCore(unittest.TestCase):
         preds = self.model.predict(self.X[:10])
         self.assertEqual(len(preds), 10)
         
-        # Test safe save and load
-        os.makedirs("models", exist_ok=True)
-        test_path = "models/test_save_model.npz"
-        self.model.save(test_path)
-        self.assertTrue(os.path.exists(test_path))
-        
-        loaded_model = FraudMLP()
-        loaded_model.load(test_path)
-        loaded_preds = loaded_model.predict(self.X[:10])
-        self.assertTrue(np.array_equal(preds, loaded_preds))
+        # Test safe save and load with temporary file
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".npz", delete=False) as tmp:
+            test_path = tmp.name
+        try:
+            self.model.save(test_path)
+            self.assertTrue(os.path.exists(test_path))
+            
+            loaded_model = FraudMLP()
+            loaded_model.load(test_path)
+            loaded_preds = loaded_model.predict(self.X[:10])
+            self.assertTrue(np.array_equal(preds, loaded_preds))
+        finally:
+            if os.path.exists(test_path):
+                os.remove(test_path)
 
     def test_02_attack_xlsb_injection_accuracy_invariance(self):
         """Test X-LSB payload injection keeps numerical deviation under 1e-6."""
@@ -202,7 +207,7 @@ class TestWeightTrapCore(unittest.TestCase):
         )
         self.assertIn("RBI Model Risk Management & Forensic Autopsy Dossier", html)
         self.assertIn("razorpay-test-model", html)
-        self.assertIn("Document Digital Signature", html)
+        self.assertIn("Cryptographic Evidence SHA-256 Digest", html)
 
 
 if __name__ == "__main__":

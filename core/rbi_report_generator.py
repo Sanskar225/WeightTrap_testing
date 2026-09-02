@@ -156,7 +156,7 @@ class RBIReportGenerator:
             {drill_html}
         </div>
 
-        <h2>4. Causal Counterfactual Validation (Mathematical Proof of Malice)</h2>
+        <h2>4. Causal Counterfactual Validation (Controlled Empirical Evidence)</h2>
         <div style="font-size:13px; line-height:1.6; background:#F8FAFC; padding:16px; border-radius:6px; border:1px solid #E2E8F0;">
             <div style="font-weight:700; color:{badge_color}; margin-bottom:6px;">
                 Causal Verification Result: {counterfactual_proof.get('proof_verdict', 'N/A')}
@@ -172,7 +172,7 @@ class RBIReportGenerator:
                 <div style="background:#FFFFFF; border:1px solid #E2E8F0; padding:10px; border-radius:4px;">
                     <div style="font-size:11px; color:#64748B; font-weight:600;">CONTROL LAYER ABLATION DELTA</div>
                     <div style="font-size:16px; font-weight:700; color:#10B981; margin-top:2px;">
-                        +{counterfactual_proof.get('net_causal_impact_delta', 0):.1f}% Malice Spread Over Control
+                        +{counterfactual_proof.get('net_causal_impact_delta', 0):.1f}% Causal Differential Over Control
                     </div>
                 </div>
             </div>
@@ -187,11 +187,11 @@ class RBIReportGenerator:
             <div style="display:flex; justify-content:space-between;">
                 <div>
                     <b>Audited by:</b> WEIGHTTRAP Model Autopsy & Tripwire Sentinel Engine v1.0<br>
-                    <b>Document Digital Signature:</b> <code>{doc_signature}</code>
+                    <b>Cryptographic Evidence SHA-256 Digest:</b> <code>{doc_signature}</code>
                 </div>
                 <div style="text-align:right;">
                     <b>Execution Timestamp:</b> {timestamp_now}<br>
-                    <b>Classification:</b> Regulated Financial Entity Confidential Evidence Record
+                    <b>Classification:</b> Regulated Financial Entity Confidential Evidence Record (RBI-Aligned Workflow)
                 </div>
             </div>
         </div>
