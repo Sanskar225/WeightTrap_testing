@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  weighttrap-control-plane:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: weighttrap-control-plane
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - PLATFORM_ID=Razorpay-Fintech-Control-Plane
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./reports:/app/reports
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

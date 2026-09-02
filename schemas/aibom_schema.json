@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AIBOM_MRM_Specification",
+  "description": "Artificial Intelligence Bill of Materials (AIBOM) compliant with RBI Model Risk Management Principle 4",
+  "type": "object",
+  "required": [
+    "spec_version",
+    "aibom_id",
+    "timestamp",
+    "model_identity",
+    "parameters_inventory",
+    "cryptographic_fingerprint",
+    "governance_metadata"
+  ],
+  "properties": {
+    "spec_version": {
+      "type": "string",
+      "enum": ["AIBOM-MRM-2026.1"]
+    },
+    "aibom_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "model_identity": {
+      "type": "object",
+      "required": ["model_id", "framework", "task_domain", "criticality_tier"],
+      "properties": {
+        "model_id": {"type": "string"},
+        "framework": {"type": "string"},
+        "task_domain": {"type": "string"},
+        "criticality_tier": {"type": "string", "enum": ["TIER_0", "TIER_1", "TIER_2"]}
+      }
+    },
+    "parameters_inventory": {
+      "type": "object",
+      "required": ["total_trainable_parameters", "total_tensors_count", "tensor_manifest"],
+      "properties": {
+        "total_trainable_parameters": {"type": "integer"},
+        "total_tensors_count": {"type": "integer"},
+        "tensor_manifest": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tensor_name", "shape", "dtype", "param_count", "sha256_hash"],
+            "properties": {
+              "tensor_name": {"type": "string"},
+              "shape": {"type": "array", "items": {"type": "integer"}},
+              "dtype": {"type": "string"},
+              "param_count": {"type": "integer"},
+              "sha256_hash": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "cryptographic_fingerprint": {
+      "type": "object",
+      "required": ["merkle_root_hash", "digest_algorithm"],
+      "properties": {
+        "merkle_root_hash": {"type": "string"},
+        "digest_algorithm": {"type": "string", "enum": ["SHA-256", "SHA-512"]}
+      }
+    },
+    "governance_metadata": {
+      "type": "object",
+      "required": ["model_owner_team", "regulatory_framework", "deployment_target"],
+      "properties": {
+        "model_owner_team": {"type": "string"},
+        "regulatory_framework": {"type": "string"},
+        "deployment_target": {"type": "string"}
+      }
+    }
+  }
+}

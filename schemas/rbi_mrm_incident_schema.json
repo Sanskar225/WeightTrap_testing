@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RBI_MRM_Incident_Evidence_Package",
+  "description": "Cryptographically sealed regulatory incident record compliant with RBI Model Risk Management Principle 7",
+  "type": "object",
+  "required": [
+    "incident_id",
+    "timestamp_utc",
+    "target_model_id",
+    "criticality_tier",
+    "computed_risk_level",
+    "policy_decision",
+    "containment_action",
+    "recovery_status",
+    "cryptographic_digest",
+    "evidence_chain"
+  ],
+  "properties": {
+    "incident_id": {"type": "string"},
+    "timestamp_utc": {"type": "string"},
+    "target_model_id": {"type": "string"},
+    "criticality_tier": {"type": "string", "enum": ["TIER_0", "TIER_1", "TIER_2"]},
+    "computed_risk_level": {"type": "string", "enum": ["HIGH", "MEDIUM", "LOW"]},
+    "policy_decision": {"type": "string"},
+    "containment_action": {
+      "type": "object",
+      "required": ["failover_executed", "fallback_model_id", "switch_latency_ms"],
+      "properties": {
+        "failover_executed": {"type": "boolean"},
+        "fallback_model_id": {"type": "string"},
+        "switch_latency_ms": {"type": "number"}
+      }
+    },
+    "recovery_status": {
+      "type": "string",
+      "enum": ["SYSTEM_RECOVERED_AND_STABILIZED", "RECOVERY_FAILED_AUTO_ROLLBACK"]
+    },
+    "cryptographic_digest": {"type": "string"},
+    "evidence_chain": {
+      "type": "object",
+      "required": ["merkle_root_current", "merkle_root_baseline", "svd_spectral_ratio", "causal_divergence_delta"],
+      "properties": {
+        "merkle_root_current": {"type": "string"},
+        "merkle_root_baseline": {"type": "string"},
+        "svd_spectral_ratio": {"type": "number"},
+        "causal_divergence_delta": {"type": "number"}
+      }
+    }
+  }
+}

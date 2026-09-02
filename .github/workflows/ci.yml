@@ -1,0 +1,54 @@
+name: WEIGHTTRAP CI — Autonomous Control Plane Verification Suite
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test-and-verify:
+    name: 🛡️ Automated Verification Suite (32 Tests + 4 Benchmarks)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+    - name: 📥 Check out repository
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-cov ruff mypy
+
+    - name: 🧪 Run Automated 6-Engine Test Suite (32 Tests)
+      run: |
+        python run_all_tests.py
+
+    - name: 🔬 Run Scientific Empirical Evaluation Suite (4 Experiments)
+      run: |
+        python benchmarks/run_complete_evaluation.py
+
+    - name: 📊 Run Pytest with Coverage Report
+      run: |
+        pytest --cov=core --cov=models --cov=attack --cov-report=term-missing tests/
+
+    - name: 📄 Verify Standalone CLI Tool
+      run: |
+        python cli.py --help
+        python cli.py test
+
+    - name: 📑 Verify RBI Audit Report Compilation
+      run: |
+        python cli.py audit --model razorpay_fraud_scorer_v2.1 --output reports/ci_generated_audit.html
+        test -f reports/ci_generated_audit.html

@@ -73,10 +73,14 @@ class ModelTrafficRouter:
         return {
             "action": "FAILOVER_EXECUTED",
             "previous_route": "PRIMARY",
-            "current_active_route": "FALLBACK",
+            "active_route": self.active_route,
+            "current_active_route": self.active_route,
+            "status": "FALLBACK_ACTIVE",
+            "routing_target": self.routing_target,
             "active_model_id": self.fallback_model_id,
+            "switch_latency_ms": self.last_switch_latency_ms,
             "measured_failover_latency_ms": self.last_switch_latency_ms,
-            "status": "FALLBACK_ACTIVE"
+            "timestamp": time.strftime("%H:%M:%S UTC")
         }
 
     def isolate_all_traffic(self) -> Dict[str, Any]:
