@@ -82,6 +82,11 @@ class AegisIncidentReasoner:
             log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 5.0
             log_likelihoods["H2_UNAUTHORIZED_HOT_RELOAD"] += 2.0
             log_likelihoods["H3_COORDINATED_FLEET_CAMPAIGN"] += 3.0
+        elif svd_spectral_ratio >= 0.65:
+            # Borderline subspace concentration -> elevates diagnostic ambiguity
+            log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] -= 1.5
+            log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] += 3.2
+            log_likelihoods["H2_UNAUTHORIZED_HOT_RELOAD"] += 1.0
         else:
             log_likelihoods["H0_NOMINAL_OR_BENIGN_DRIFT"] += 1.5
             log_likelihoods["H1_STEGANOGRAPHIC_BACKDOOR"] -= 2.0
@@ -121,11 +126,16 @@ class AegisIncidentReasoner:
             if p > 1e-6:
                 entropy -= p * math.log2(p)
 
+        # Ambiguity threshold: when entropy exceeds 0.80 bits or top margin < 0.45
+        sorted_probs = sorted(posteriors.values(), reverse=True)
+        margin = sorted_probs[0] - sorted_probs[1] if len(sorted_probs) > 1 else 1.0
+        is_ambiguous = (entropy > 0.80) or (margin < 0.45)
+
         return {
             "priors": priors,
             "posteriors": posteriors,
             "epistemic_entropy_bits": round(entropy, 3),
-            "is_ambiguous": entropy > 1.2
+            "is_ambiguous": is_ambiguous
         }
 
     @classmethod

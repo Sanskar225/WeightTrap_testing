@@ -29,8 +29,8 @@ Tests whether sophisticated adversaries can bypass static heuristic scanners by 
 
 ---
 
-### Experiment 2: 100-Model Confusion Matrix (50 Clean vs 50 Adversarial)
-Evaluates classification performance on a cohort of 100 neural networks (50 pristine vs 50 injected with varying steganographic payload rates from 5% to 50%).
+### Experiment 2: 100 Evaluation Instances (50 Clean vs 50 Adversarial)
+Evaluates classification performance across 100 evaluation instances (50 pristine baseline models vs 50 models injected with varying steganographic payload rates from 5% to 50%).
 
 ```
 STRICT QUARANTINE GATE (Score >= 60.0) [CI/CD Deployment Blocker]:
@@ -48,8 +48,8 @@ STRICT QUARANTINE GATE (Score >= 60.0) [CI/CD Deployment Blocker]:
 
 ---
 
-### Experiment 3: In-Process Inference Latency Overhead (10,000 Transactions)
-Measures the computational overhead of running concurrent Tripwire verification daemons alongside real-time inference.
+### Experiment 3: In-Process Single-Node Latency Overhead (10,000 Transactions)
+Measures the computational overhead of running concurrent Tripwire verification daemons alongside real-time model inference. *(Note: This is a single-node, in-process execution benchmark; it does not represent end-to-end internet payment network roundtrips).*
 
 | Percentile | Baseline (No Daemon) | Under Concurrent Tripwire Daemon | Measured Delta |
 |---|:---:|:---:|:---:|

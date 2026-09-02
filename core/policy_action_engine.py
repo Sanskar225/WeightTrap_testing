@@ -30,21 +30,7 @@ class PolicyActionEngine:
         """
         Evaluates policy rules and returns authorized containment action.
         """
-        if risk_level == "LOW":
-            policy_decision = "CONTINUE"
-            action_type = "AUTHORIZE_TRAFFIC"
-            traffic_state = "100%_ACTIVE_ON_PRIMARY"
-            execution_log = f"Policy authorized: Model '{model_id}' operating within verified risk bounds. Traffic authorized."
-            failover_executed = False
-
-        elif risk_level == "MEDIUM":
-            policy_decision = "HUMAN_REVIEW"
-            action_type = "THROTTLE_AND_ESCALATE"
-            traffic_state = "THROTTLED_TO_80%"
-            execution_log = f"Policy gated: Anomaly ambiguous. Traffic throttled by 20%, escalated to SecOps On-Call."
-            failover_executed = False
-
-        elif is_campaign:
+        if is_campaign:
             policy_decision = "QUARANTINE_CLUSTER"
             action_type = "ISOLATE_FLEET_CLUSTER"
             traffic_state = f"CLUSTER_ISOLATED_REROUTED_TO_{fallback_model_id}"
@@ -58,11 +44,25 @@ class PolicyActionEngine:
             execution_log = f"Policy mandated: Tier-0 payment path exposed to high-risk backdoor. Executed sub-2ms traffic switch to verified fallback '{fallback_model_id}'."
             failover_executed = True
 
-        else:
+        elif risk_level == "HIGH":
             policy_decision = "ISOLATE"
             action_type = "ISOLATE_MODEL_CONTAINER"
             traffic_state = "MODEL_TRAFFIC_SEVERED"
             execution_log = f"Policy enforced: High risk detected on '{model_id}'. Container traffic isolated."
+            failover_executed = False
+
+        elif risk_level == "MEDIUM":
+            policy_decision = "HUMAN_REVIEW"
+            action_type = "THROTTLE_AND_ESCALATE"
+            traffic_state = "THROTTLED_TO_80%"
+            execution_log = f"Policy gated: Anomaly ambiguous. Traffic throttled by 20%, escalated to SecOps On-Call."
+            failover_executed = False
+
+        else:
+            policy_decision = "CONTINUE"
+            action_type = "AUTHORIZE_TRAFFIC"
+            traffic_state = "100%_ACTIVE_ON_PRIMARY"
+            execution_log = f"Policy authorized: Model '{model_id}' operating within verified risk bounds. Traffic authorized."
             failover_executed = False
 
         return {

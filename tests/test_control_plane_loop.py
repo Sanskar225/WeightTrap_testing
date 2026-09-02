@@ -79,6 +79,15 @@ class TestControlPlane6Engines(unittest.TestCase):
         self.assertTrue(high_res["failover_executed"])
         self.assertEqual(high_res["target_routing_model"], "razorpay_fraud_baseline_v1.0")
 
+        # Regression check: is_campaign must take precedence even on MEDIUM risk
+        campaign_res = PolicyActionEngine.evaluate_and_enforce_policy(
+            "cluster_model_x",
+            risk_level="MEDIUM",
+            is_campaign=True
+        )
+        self.assertEqual(campaign_res["policy_decision"], "QUARANTINE_CLUSTER")
+        self.assertTrue(campaign_res["failover_executed"])
+
     def test_04_recovery_verification_and_sealing(self):
         """Test recovery engine executes active probes and seals cryptographic evidence."""
         router = ModelTrafficRouter()

@@ -322,7 +322,13 @@ class AegisAutonomousControlPlane:
             action_result=policy_res,
             X_probe=X_val,
             y_probe=y_val,
-            fallback_model_id=policy_res.get("target_routing_model", "razorpay_fraud_baseline_v1.0")
+            fallback_model_id=policy_res.get("target_routing_model", "razorpay_fraud_baseline_v1.0"),
+            evidence_diagnostics={
+                "merkle_root_current": current_merkle.root_hash,
+                "merkle_root_baseline": golden_merkle.root_hash,
+                "svd_spectral_ratio": s_ratio,
+                "causal_divergence_delta": 0.15 if causal_proven else 0.0
+            }
         )
         checks = recovery_res["verification_checks"]
 

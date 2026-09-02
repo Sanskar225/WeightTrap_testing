@@ -6,6 +6,7 @@
 ---
 
 ## 📌 Quick Links & Deep Architecture Documentation
+- 🧑⚖️ **[JUDGE.md](JUDGE.md)** — 2-minute evaluator quickstart, test commands, expected KPIs & scope disclosures.
 - 🏛️ **[ARCHITECTURE.md](ARCHITECTURE.md)** — Mathematical formulations (SVD, Merkle reduction, Shannon entropy, SLA budgets).
 - 🧠 **[AI_JUDGMENT.md](AI_JUDGMENT.md)** — Where AI is meaningfully used vs where AI is intentionally NOT used.
 - 🔄 **[FAILURE_RECOVERY.md](FAILURE_RECOVERY.md)** — What broke, how it was contained, and closed-loop recovery probing.
@@ -111,14 +112,17 @@ OBSERVE ➔ UNDERSTAND ➔ INVESTIGATE ➔ REASON ➔ DECIDE ➔ ACT ➔ VERIFY 
 
 ---
 
-## 5. Measured Value Impact
+## 5. Measured Value Impact (In-Process Benchmark Evaluation)
 
 | Metric | Without WEIGHTTRAP | With WEIGHTTRAP Control Plane |
 |---|---|---|
-| **Mean Time to Containment (MTTC)** | $45 - 120\text{ minutes}$ (Manual triage) | **$< 2\text{ milliseconds}$** (In-memory failover) |
-| **Transaction Processing SLA** | Breached during incident discovery | **$19.55\text{ ms}$** p50 (Well within 50ms SLA) |
-| **Failover Switch Latency** | Service restart ($> 30\text{s}$) | **$0.05\text{ ms}$** (Atomic memory pointer swap) |
+| **Mean Time to Containment (MTTC)** | $45 - 120\text{ minutes}$ (Manual triage) | **$< 2\text{ milliseconds}$** (In-memory atomic pointer switch) |
+| **Transaction Processing SLA** | Breached during incident discovery | **$19.55\text{ ms}$** p50 in harness (Within 50ms SLA) |
+| **Failover Switch Latency** | Service restart ($> 30\text{s}$) | **$0.05\text{ ms}$** (Measured in-process atomic route-switch benchmark) |
 | **Regulatory Audit Packaging** | Days of manual log stitching | **Instantaneous** (SHA-256 sealed JSON dossier) |
+
+> [!NOTE]
+> *Note on Latency Scope: All latency figures represent single-node, in-process microsecond benchmarks within the evaluation harness; they do not represent distributed end-to-end internet payment network roundtrips.*
 
 ---
 

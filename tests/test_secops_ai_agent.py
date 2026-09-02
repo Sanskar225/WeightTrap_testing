@@ -107,6 +107,18 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         self.assertTrue(len(stealth_rca["contradiction_analysis"]) > 0)
         self.assertIn("Stealth", stealth_rca["contradiction_analysis"][0])
 
+        # Test Case 3: High Epistemic Ambiguity (Conflicting Signals Triggering is_ambiguous)
+        ambiguous_res = AegisIncidentReasoner.compute_bayesian_posteriors(
+            merkle_match=False,
+            svd_spectral_ratio=0.70,
+            stat_risk_score=35.0,
+            behavioral_drift_rate=0.08,
+            causal_impact_delta=0.02,
+            fleet_compromise_count=0
+        )
+        self.assertTrue(ambiguous_res["is_ambiguous"])
+        self.assertGreater(ambiguous_res["epistemic_entropy_bits"], 0.85)
+
 
 if __name__ == "__main__":
     unittest.main()

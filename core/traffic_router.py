@@ -114,6 +114,8 @@ class ModelTrafficRouter:
         self.total_transactions_routed += len(X_batch)
         return preds
 
+    predict = route_transaction_batch
+
     def get_router_status(self) -> Dict[str, Any]:
         """Returns live router state."""
         return {
