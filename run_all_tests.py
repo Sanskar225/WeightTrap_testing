@@ -26,9 +26,9 @@ def run_master_test_suite():
     print("=" * 75)
 
     # 1. Run Unit & Integration Tests across all 6 engines
-    print("\n[+] Running Comprehensive QA Suite (25 Tests across 6 Control Plane Engines)...")
     loader = unittest.TestLoader()
     suite = loader.discover(start_dir="tests", pattern="test_*.py")
+    print(f"\n[+] Running Comprehensive QA Suite ({suite.countTestCases()} Tests across 6 Control Plane Engines)...")
     
     runner = unittest.TextTestRunner(verbosity=2)
     start_time = time.time()
