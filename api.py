@@ -85,6 +85,15 @@ def init_demo_state():
         operator="Risk-Officer"
     )
 
+    # Initialize live deployment state (current in-memory serving models)
+    global live_deployed_models
+    live_deployed_models = {
+        "razorpay-fraud-classifier-v2.1": {k: v.copy() for k, v in base_model.weights.items()},
+        "razorpay-credit-limit-scorer-v1.0": {k: v.copy() for k, v in credit_model.weights.items()}
+    }
+
+live_deployed_models: Dict[str, Dict[str, np.ndarray]] = {}
+
 try:
     init_demo_state()
 except Exception as e:
@@ -96,7 +105,7 @@ def health_check():
     return {
         "status": "HEALTHY",
         "engine": "WEIGHTTRAP v1.0",
-        "regulatory_compliance": "RBI MRM (June 2026) / FREE-AI (2025)",
+        "regulatory_compliance": "RBI-aligned Model Risk Governance (MRM / FREE-AI)",
         "monitored_models": len(tripwire_sentinel.registry)
     }
 
@@ -109,13 +118,13 @@ def get_tripwire_status():
 
 @app.post("/api/tripwire/verify/{model_id}")
 def verify_model(model_id: str):
-    """Verifies live model state against registered baseline."""
+    """Verifies live deployed model state against registered golden baseline."""
     if model_id not in tripwire_sentinel.registry:
         raise HTTPException(status_code=404, detail="Model not found in registry")
     
     entry = tripwire_sentinel.registry[model_id]
-    weights = entry.fingerprint.weights
-    res = tripwire_sentinel.verify_live_model(model_id, weights)
+    live_weights = live_deployed_models.get(model_id, entry.fingerprint.weights)
+    res = tripwire_sentinel.verify_live_model(model_id, live_weights)
     return res
 
 
@@ -136,6 +145,9 @@ def simulate_tripwire_tamper(model_id: str):
         payload_text="EXPLOIT_PAYLOAD_UNAUTHORIZED_LIVE_TAMPER_RAZORPAY_FLEET_091",
         embedding_rate=0.20
     )
+    
+    # Update live deployment state with the tampered weights
+    live_deployed_models[model_id] = tampered_weights
     
     # Run live verification with tampered weights
     tripwire_alert = tripwire_sentinel.verify_live_model(model_id, tampered_weights)
@@ -340,7 +352,13 @@ async def run_control_plane_full_loop(model_id: str = "razorpay_fraud_scorer_v2.
         target_model = base_model
 
     cp = AegisAutonomousControlPlane(platform_id="Razorpay-Payments-Core-v1")
-    return cp.execute_complete_control_loop(model_id, target_model, X[:400], y[:400], is_tampered=is_tampered)
+    return cp.execute_complete_control_loop(
+        model_id=model_id,
+        model_obj=target_model,
+        X_val=X[:400],
+        y_val=y[:400],
+        golden_baseline_weights=base_model.weights
+    )
 
 
 @app.get("/api/topology/graph")

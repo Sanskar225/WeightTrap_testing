@@ -60,7 +60,30 @@ class TestWeightTrapAPI(unittest.TestCase):
         response = self.client.get("/api/fleet/correlate")
         self.assertEqual(response.status_code, 200)
         data = response.json()
+        self.assertIn("fleet_size", data)
         self.assertTrue(data["is_coordinated_attack_detected"])
+
+    def test_07_tripwire_verify_endpoint_after_tamper(self):
+        """Tests that /api/tripwire/verify correctly flags a tampered model."""
+        # 1. Simulate attack on model
+        self.client.post("/api/tripwire/simulate-attack/razorpay-fraud-classifier-v2.1")
+        
+        # 2. Verify model endpoint should now detect tampering
+        response = self.client.post("/api/tripwire/verify/razorpay-fraud-classifier-v2.1")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "CRITICAL_TAMPER_ALERT")
+        self.assertTrue(data["tampered"])
+        self.assertGreater(data["tampered_layers_count"], 0)
+
+    def test_08_control_plane_full_loop_endpoint(self):
+        """Tests full 14-step control plane endpoint."""
+        response = self.client.get("/api/control-plane/full-loop?model_id=razorpay_fraud_scorer_v2.1&is_tampered=true")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["steps_count"], 14)
+        self.assertTrue(data["incident_detected"])
+        self.assertTrue(data["recovery_verification"]["is_recovered"])
 
 
 if __name__ == "__main__":

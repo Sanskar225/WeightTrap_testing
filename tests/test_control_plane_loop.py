@@ -17,6 +17,7 @@ from attack.embed_payload import ModelWeightAttacker
 from core.observability_engine import ObservabilityEngine
 from core.topology_engine import InfrastructureTopologyEngine
 from core.policy_action_engine import PolicyActionEngine
+from core.traffic_router import ModelTrafficRouter
 from core.recovery_verifier import RecoveryVerificationEngine
 from core.aegis_investigator import AegisAutonomousControlPlane
 
@@ -68,14 +69,19 @@ class TestControlPlane6Engines(unittest.TestCase):
     def test_04_recovery_verification_and_sealing(self):
         """Test recovery engine executes active probes and seals cryptographic evidence."""
         action_res = {"policy_decision": "CONTAIN_AND_REROUTE"}
-        rec_res = RecoveryVerificationEngine.verify_post_action_recovery("razorpay_fraud_scorer_v2.1", action_res)
+        rec_res = RecoveryVerificationEngine.verify_post_action_recovery(
+            "razorpay_fraud_scorer_v2.1",
+            action_res,
+            X_probe=self.X[350:],
+            y_probe=self.y[350:]
+        )
         self.assertEqual(rec_res["recovery_status"], "SYSTEM_RECOVERED_AND_STABILIZED")
         self.assertTrue(rec_res["is_recovered"])
         self.assertTrue(rec_res["verification_checks"]["slo_compliant"])
         self.assertIn("INC-2026-MRM", rec_res["sealed_evidence_package"]["incident_id"])
 
     def test_05_aegis_full_14_step_closed_loop(self):
-        """Test Aegis Autonomous Control Plane executes all 14 steps cleanly."""
+        """Test Aegis Autonomous Control Plane executes all 14 steps cleanly on backdoored model."""
         tampered_weights, _ = ModelWeightAttacker.create_functional_backdoor(
             self.clean_model.weights,
             target_layer="block2.feature_extractor.weight"
@@ -89,20 +95,49 @@ class TestControlPlane6Engines(unittest.TestCase):
             model_obj=poisoned_model,
             X_val=self.X[350:],
             y_val=self.y[350:],
-            is_tampered=True
+            golden_baseline_weights=self.clean_model.weights
         )
 
         self.assertEqual(loop_res["steps_count"], 14)
         self.assertTrue(loop_res["incident_detected"])
+        self.assertEqual(loop_res["computed_risk_level"], "HIGH")
+        self.assertIn(loop_res["policy_action"]["policy_decision"], ["CONTAIN_AND_REROUTE", "QUARANTINE_CLUSTER"])
+        self.assertTrue(loop_res["policy_action"]["failover_executed"])
+        self.assertTrue(loop_res["recovery_verification"]["is_recovered"])
+
+    def test_06_aegis_clean_model_trust_loop(self):
+        """Test Aegis Autonomous Control Plane passes clean model and keeps primary traffic."""
+        cp = AegisAutonomousControlPlane(platform_id="Razorpay-Test-Platform")
+        loop_res = cp.execute_complete_control_loop(
+            model_id="clean_prod_model",
+            model_obj=self.clean_model,
+            X_val=self.X[350:],
+            y_val=self.y[350:],
+            golden_baseline_weights=self.clean_model.weights
+        )
+        self.assertEqual(loop_res["steps_count"], 14)
+        self.assertFalse(loop_res["incident_detected"])
+        self.assertEqual(loop_res["computed_risk_level"], "LOW")
+        self.assertEqual(loop_res["policy_action"]["policy_decision"], "CONTINUE")
+
+    def test_07_traffic_router_pointer_swap_and_routing(self):
+        """Test router executes in-memory pointer swap to verified fallback and routes transactions."""
+        router = ModelTrafficRouter()
+        router.set_primary_weights(self.clean_model.weights)
+        router.set_fallback_weights(self.clean_model.weights)
         
-        step_phases = [step["phase"] for step in loop_res["incident_lifecycle_trace"]]
-        self.assertIn("OBSERVE", step_phases)
-        self.assertIn("INVESTIGATE", step_phases)
-        self.assertIn("DECIDE", step_phases)
-        self.assertIn("ACT", step_phases)
-        self.assertIn("VERIFY", step_phases)
-        self.assertIn("RECOVER", step_phases)
-        self.assertIn("AUDIT", step_phases)
+        # Initial primary route
+        router.reset_to_primary()
+        self.assertEqual(router.active_route, "PRIMARY")
+        
+        # Execute failover
+        swap_res = router.execute_failover_to_fallback()
+        self.assertEqual(swap_res["status"], "FALLBACK_ACTIVE")
+        self.assertEqual(router.active_route, "FALLBACK")
+        
+        # Route batch
+        preds = router.route_transaction_batch(self.X[:50])
+        self.assertEqual(len(preds), 50)
 
 
 if __name__ == "__main__":

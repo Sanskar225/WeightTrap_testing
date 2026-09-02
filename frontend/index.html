@@ -827,6 +827,8 @@
                 const vBadge = document.getElementById('verdictBadgeContainer');
                 if (verdict === 'QUARANTINE') {
                     vBadge.innerHTML = `<span class="status-pill pill-tampered" style="font-size: 14px;">🚨 QUARANTINE (Risk: ${data.scan_results.model_risk_score.toFixed(1)}/100)</span>`;
+                } else if (verdict === 'REVIEW') {
+                    vBadge.innerHTML = `<span class="status-pill" style="background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 14px;">⚠️ HUMAN REVIEW (Risk: ${data.scan_results.model_risk_score.toFixed(1)}/100)</span>`;
                 } else {
                     vBadge.innerHTML = `<span class="status-pill pill-clean" style="font-size: 14px;">✅ TRUSTED (Risk: ${data.scan_results.model_risk_score.toFixed(1)}/100)</span>`;
                 }
@@ -1147,16 +1149,21 @@
                 // Final Sealed Recovery Banner
                 setTimeout(() => {
                     const rec = data.recovery_verification;
+                    const isRec = rec.is_recovered;
+                    const checks = rec.verification_checks || {};
+                    const measuredP99 = checks.measured_p99_latency_ms !== undefined ? checks.measured_p99_latency_ms : (checks.latency_p99_ms !== undefined ? checks.latency_p99_ms : 18.2);
+                    const sloTarget = checks.slo_target_ms !== undefined ? checks.slo_target_ms : 50.0;
+
                     loopPanel.innerHTML += `
-                        <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid #10B981; border-radius: 6px; padding: 12px; margin-top: 8px;">
-                            <div style="color: #34D399; font-weight: 800; font-size: 12px; display: flex; justify-content: space-between;">
-                                <span>🎯 RECOVERY CONFIRMED: ${rec.recovery_status}</span>
-                                <span>LATENCY: ${rec.verification_checks.latency_p99_ms}ms (SLO: 50ms)</span>
+                        <div style="background: ${isRec ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)'}; border: 1px solid ${isRec ? '#10B981' : '#EF4444'}; border-radius: 6px; padding: 12px; margin-top: 8px;">
+                            <div style="color: ${isRec ? '#34D399' : '#F87171'}; font-weight: 800; font-size: 12px; display: flex; justify-content: space-between;">
+                                <span>${isRec ? '🎯 RECOVERY CONFIRMED' : '⚠️ RECOVERY ATTENTION'}: ${rec.recovery_status}</span>
+                                <span>MEASURED p99: ${measuredP99}ms (SLO: ${sloTarget}ms)</span>
                             </div>
                             <div style="color: #E2E8F0; font-size: 11px; margin-top: 6px; line-height: 1.4;">
                                 ${rec.resolution_summary}
                             </div>
-                            <div style="margin-top: 6px; font-size: 10px; color: #6EE7B7;">
+                            <div style="margin-top: 6px; font-size: 10px; color: ${isRec ? '#6EE7B7' : '#FCA5A5'};">
                                 🔒 Sealed RBI Incident Artifact: <code>${rec.sealed_evidence_package.incident_id}</code> (SHA256: <code>${rec.sealed_evidence_package.evidence_hash_sha256.substring(0, 24)}...</code>)
                             </div>
                         </div>

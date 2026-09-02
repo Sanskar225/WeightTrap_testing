@@ -196,11 +196,14 @@ def run_complete_evaluation():
     clean_svd_ratios = np.array(clean_svd_ratios)
     poisoned_svd_ratios = np.array(poisoned_svd_ratios)
 
+    # Compute actual independent two-sample Welch's t-test
+    t_stat, p_val = stats.ttest_ind(poisoned_svd_ratios, clean_svd_ratios, equal_var=False)
+
     print(f" SVD SPECTRAL ENERGY RATIO DISTRIBUTION (Tran et al. NeurIPS 2018):")
     print(f"   • Clean Models (N=20)    : Mean = {np.mean(clean_svd_ratios):.3f} +/- {np.std(clean_svd_ratios):.3f} [Min: {np.min(clean_svd_ratios):.3f}, Max: {np.max(clean_svd_ratios):.3f}]")
     print(f"   • Poisoned Models (N=20) : Mean = {np.mean(poisoned_svd_ratios):.3f} +/- {np.std(poisoned_svd_ratios):.3f} [Min: {np.min(poisoned_svd_ratios):.3f}, Max: {np.max(poisoned_svd_ratios):.3f}]")
     print(f"   ---------------------------------------------------------------")
-    print(f"   • Separation Margin Delta: Delta_mean = {np.mean(poisoned_svd_ratios) - np.mean(clean_svd_ratios):.3f} (Significant t-test p < 1e-6)")
+    print(f"   • Separation Margin Delta: Delta_mean = {np.mean(poisoned_svd_ratios) - np.mean(clean_svd_ratios):.3f} (Welch t-stat = {t_stat:.2f}, p-value = {p_val:.4e})")
     print(f"   • Day-0 SVD Detection Rate: {np.sum(poisoned_svd_ratios >= 0.80) / len(poisoned_svd_ratios) * 100:.1f}% on 20 held-out vendor models.")
 
     print("\n" + "=" * 80)

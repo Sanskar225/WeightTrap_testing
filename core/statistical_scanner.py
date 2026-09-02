@@ -23,9 +23,9 @@ class StatisticalScanner:
         flat = data.flatten()
         if len(flat) == 0:
             return 0.0
-        hist, _ = np.histogram(flat, bins=bins, density=True)
-        prob = hist[hist > 0]
-        prob = prob / np.sum(prob)
+        hist, _ = np.histogram(flat, bins=bins, density=False)
+        counts = hist[hist > 0]
+        prob = counts / np.sum(counts)
         entropy = -np.sum(prob * np.log2(prob))
         return float(entropy)
 
@@ -213,6 +213,7 @@ class StatisticalScanner:
         return {
             "verdict": verdict,
             "model_risk_score": float(model_risk_score),
+            "overall_risk_score": float(model_risk_score),
             "average_tensor_risk": float(avg_score),
             "total_tensors_scanned": len(tensor_results),
             "flagged_tensors_count": flagged_count,
