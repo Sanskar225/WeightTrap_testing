@@ -334,22 +334,26 @@ class AegisTrustOrchestrator:
             )
             blast_res = None
         else:
-            # Suspicious Path -> Drill Down
+            # Suspicious Path -> Drill Down & Causal Ablation
             forensic_res = self._tool_forensic_localization(model_obj.weights)
             layer_name = forensic_res.get("tensor_name", "block2.feature_extractor.weight")
+            causal_res = self._tool_causal_counterfactual_proof(model_obj, X_val, y_val)
+            causal_delta = causal_res.get("net_causal_impact_delta", 0.15)
 
             decision_trace.append({
                 "step": 2,
                 "domain_role": "Integrity Analyst",
-                "decision": f"Forensic Localization on Anomaly Layer '{layer_name}'",
-                "evidence": f"SVD ratio {s_ratio:.3f} flagged heavy-tail concentration.",
-                "reason": "Isolate perturbed weights and detect embedding signature.",
-                "action": f"Invoke `forensic_localization(layer='{layer_name}')`",
+                "decision": f"Forensic Localization & Causal Ablation on Anomaly Layer '{layer_name}'",
+                "evidence": f"SVD ratio {s_ratio:.3f} flagged heavy-tail concentration; Causal delta = {causal_delta:.3f}.",
+                "reason": "Isolate perturbed weights and quantify functional behavioral malice via ablation.",
+                "action": f"Invoke `forensic_localization(layer='{layer_name}')` + `causal_counterfactual_proof()`",
                 "finding": {
                     "layer_inspected": layer_name,
                     "tamper_detected": forensic_res.get("tamper_detected", True),
                     "entropy": forensic_res.get("entropy", 0.98),
-                    "lsb_distortion": forensic_res.get("lsb_distortion", True)
+                    "lsb_distortion": forensic_res.get("lsb_distortion", True),
+                    "causal_impact_delta": causal_delta,
+                    "causal_malice_proven": causal_res.get("causal_malice_proven", True)
                 }
             })
 
@@ -392,14 +396,14 @@ class AegisTrustOrchestrator:
                 }
             })
 
-            # Aegis Bayesian AI Hypothesis Reasoning
+            # Aegis Bayesian AI Hypothesis Reasoning (Conditioned on live Causal + SVD + Fleet signals)
             rca = AegisIncidentReasoner.evaluate_incident_hypothesis(
                 model_id=model_id,
                 merkle_match=False,
                 svd_spectral_ratio=s_ratio,
                 stat_risk_score=70.0,
                 behavioral_drift_rate=0.25,
-                causal_impact_delta=0.15,
+                causal_impact_delta=causal_delta,
                 fleet_compromise_count=comp_count
             )
 

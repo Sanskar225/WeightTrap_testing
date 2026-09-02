@@ -70,6 +70,8 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         self.assertIn("Threat Hunter", roles)
         self.assertIn("Risk Analyst", roles)
         self.assertIn("Policy Engine", roles)
+        self.assertIn("causal_malice_proven", trace["decision_trace"][1]["finding"])
+        self.assertTrue(trace["decision_trace"][1]["finding"]["causal_malice_proven"])
         self.assertIn("ISOLATED_TO_", trace["decision_trace"][-1]["finding"]["traffic_state"])
 
 
