@@ -137,7 +137,7 @@ To guarantee that transaction latency is NEVER impacted during nominal operation
 ## 7. 30-Second Live Demo (Golden Path & Failure Path)
 
 ```powershell
-# 1. Run Complete Automated QA Suite (36 Tests across 6 Engines)
+# 1. Run Complete Automated QA Suite (38 Tests across 6 Engines)
 python run_all_tests.py
 
 # 2. Execute Standalone CLI Control Plane Loop
@@ -158,7 +158,7 @@ python cli.py failover
 # Clean Installation
 pip install -r requirements.txt
 
-# Run QA Suite
+# Run QA Suite (38 Tests across 6 Engines)
 make test
 # OR: python run_all_tests.py
 
@@ -169,3 +169,6 @@ make bench
 # Run Dockerized Microservice
 docker compose up --build
 ```
+
+> [!NOTE]
+> *Scientific Integrity Disclosure: Incident-path evidence fields (Merkle roots, SVD ratios, Causal differentials) are dynamically derived from live model probe diagnostics. Fallback defaults exist strictly as defensive guards for zero-input/demo compatibility and are never claimed as empirical live evidence.*

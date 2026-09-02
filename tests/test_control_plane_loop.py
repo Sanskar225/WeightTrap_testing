@@ -209,6 +209,39 @@ class TestControlPlane6Engines(unittest.TestCase):
         self.assertTrue(telem["slo_breached"])
         self.assertEqual(telem["health_status"], "DEGRADED_UNHEALTHY")
 
+    def test_11_integration_policy_engine_is_final_authority(self):
+        """Integration test: Proves PolicyActionEngine is the true deterministic authority for all routing."""
+        cp = AegisAutonomousControlPlane()
+        
+        # 1. Evaluate Backdoored Model through Full Loop
+        tampered_weights, _ = ModelWeightAttacker.create_functional_backdoor(
+            self.clean_model.weights,
+            target_layer="block2.feature_extractor.weight"
+        )
+        poisoned_model = FraudMLP()
+        poisoned_model.weights = tampered_weights
+
+        loop_res = cp.execute_complete_control_loop(
+            model_id="razorpay_fraud_scorer_v2.1",
+            model_obj=poisoned_model,
+            X_val=self.X[350:],
+            y_val=self.y[350:],
+            golden_baseline_weights=self.clean_model.weights
+        )
+
+        # Assert Step 10 Policy Action Output
+        policy_res = loop_res["policy_action"]
+        self.assertIn("policy_authorization_token", policy_res)
+        self.assertTrue(policy_res["policy_authorization_token"].startswith("POL-AUTH-2026"))
+        self.assertIn(policy_res["policy_decision"], ["CONTAIN_AND_REROUTE", "QUARANTINE_CLUSTER"])
+        
+        # Assert Router state is strictly bound to Policy decision (Not free-form AI text)
+        router = ModelTrafficRouter()
+        status = router.get_router_status()
+        self.assertEqual(status["active_route"], "FALLBACK")
+        self.assertEqual(status["routing_target_model"], policy_res["target_routing_model"])
+        self.assertEqual(loop_res["recovery_verification"]["active_router_target"], policy_res["target_routing_model"])
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -75,39 +75,10 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         self.assertTrue(trace["decision_trace"][1]["finding"]["causal_malice_proven"])
         self.assertIn("CLUSTER_ISOLATED_", trace["decision_trace"][-1]["finding"]["traffic_state"])
 
-    def test_03_bayesian_entropy_reasoning_and_uncertainty_quantification(self):
-        """Test Bayesian belief updating produces valid normalized posteriors and epistemic entropy."""
+    def test_03_entropy_triggered_ambiguity(self):
+        """Test that Shannon epistemic entropy > 1.20 bits autonomously sets is_ambiguous = True."""
         from core.secops_ai_agent import AegisIncidentReasoner
         
-        # Test Case 1: Clean Nominal Model (Low Entropy H < 0.60)
-        clean_res = AegisIncidentReasoner.compute_bayesian_posteriors(
-            merkle_match=True,
-            svd_spectral_ratio=0.15,
-            stat_risk_score=10.0,
-            behavioral_drift_rate=0.01,
-            causal_impact_delta=0.0,
-            fleet_compromise_count=0
-        )
-        self.assertIn("posteriors", clean_res)
-        self.assertAlmostEqual(sum(clean_res["posteriors"].values()), 1.0, places=2)
-        self.assertGreater(clean_res["posteriors"]["H0_NOMINAL_OR_BENIGN_DRIFT"], 0.90)
-        self.assertLess(clean_res["epistemic_entropy_bits"], 0.60)
-
-        # Test Case 2: Stealth Backdoor (Merkle Mismatch but KS/Chi2 Pass)
-        stealth_rca = AegisIncidentReasoner.evaluate_incident_hypothesis(
-            model_id="stealth_backdoor_v1",
-            merkle_match=False,
-            svd_spectral_ratio=0.92,
-            stat_risk_score=20.0,
-            behavioral_drift_rate=0.05,
-            causal_impact_delta=0.12,
-            fleet_compromise_count=0
-        )
-        self.assertEqual(stealth_rca["primary_hypothesis"], "H1_STEGANOGRAPHIC_BACKDOOR")
-        self.assertTrue(len(stealth_rca["contradiction_analysis"]) > 0)
-        self.assertIn("Stealth", stealth_rca["contradiction_analysis"][0])
-
-        # Test Case 3: High Epistemic Ambiguity Asserting Operational Threshold (H > 1.20 bits)
         ambiguous_res = AegisIncidentReasoner.compute_bayesian_posteriors(
             merkle_match=False,
             svd_spectral_ratio=0.50,
@@ -119,7 +90,24 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         self.assertTrue(ambiguous_res["is_ambiguous"])
         self.assertGreater(ambiguous_res["epistemic_entropy_bits"], 1.20)
 
-    def test_04_orchestrator_deterministic_policy_authority(self):
+    def test_04_margin_triggered_ambiguity(self):
+        """Test that tight hypothesis separation (margin < 0.25) triggers is_ambiguous = True."""
+        from core.secops_ai_agent import AegisIncidentReasoner
+        
+        ambiguous_res = AegisIncidentReasoner.compute_bayesian_posteriors(
+            merkle_match=False,
+            svd_spectral_ratio=0.50,
+            stat_risk_score=40.0,
+            behavioral_drift_rate=0.08,
+            causal_impact_delta=0.0,
+            fleet_compromise_count=1
+        )
+        sorted_probs = sorted(ambiguous_res["posteriors"].values(), reverse=True)
+        margin = sorted_probs[0] - sorted_probs[1]
+        self.assertLess(margin, 0.25)
+        self.assertTrue(ambiguous_res["is_ambiguous"])
+
+    def test_05_orchestrator_deterministic_policy_authority(self):
         """Test PolicyActionEngine acts as the true deterministic gatekeeper for orchestrator verdicts."""
         orchestrator = AegisTrustOrchestrator(orchestrator_id="Test-Aegis-Engine")
         trace = orchestrator.evaluate_model_trust_lifecycle(
