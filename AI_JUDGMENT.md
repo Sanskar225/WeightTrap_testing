@@ -68,7 +68,9 @@ Razorpay's evaluation specifically seeks engineering maturity: knowing when an A
 
 ## 3. Aegis AI Cognitive Reasoner: Structured Output Contract
 
-The Aegis AI Reasoner never outputs free-form text to the traffic router. It outputs strict, machine-readable JSON schemas adhering to the following structure:
+The Aegis AI Reasoner executes a **Log-Space Bayesian Evidence Model with Calibrated Diagnostic Log-Odds Weights** conditioned on observed physical signals (Merkle, SVD, Bit-Plane KS, Causal Delta, Fleet Threat Graph), and quantifies epistemic uncertainty via **Shannon Diagnostic Entropy** ($H(\mathcal{H}) = -\sum P(H_k)\log_2 P(H_k)$).
+
+It never outputs free-form text to the traffic router. It outputs strict, machine-readable JSON schemas adhering to the following structure:
 
 ```json
 {

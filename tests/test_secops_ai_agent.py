@@ -73,5 +73,38 @@ class TestAegisTrustOrchestrator(unittest.TestCase):
         self.assertIn("ISOLATED_TO_", trace["decision_trace"][-1]["finding"]["traffic_state"])
 
 
+    def test_03_bayesian_entropy_reasoning_and_uncertainty_quantification(self):
+        """Test Bayesian belief updating produces valid normalized posteriors and epistemic entropy."""
+        from core.secops_ai_agent import AegisIncidentReasoner
+        
+        # Test Case 1: Clean Nominal Model
+        clean_res = AegisIncidentReasoner.compute_bayesian_posteriors(
+            merkle_match=True,
+            svd_spectral_ratio=0.15,
+            stat_risk_score=10.0,
+            behavioral_drift_rate=0.01,
+            causal_impact_delta=0.0,
+            fleet_compromise_count=0
+        )
+        self.assertIn("posteriors", clean_res)
+        self.assertAlmostEqual(sum(clean_res["posteriors"].values()), 1.0, places=2)
+        self.assertGreater(clean_res["posteriors"]["H0_NOMINAL_OR_BENIGN_DRIFT"], 0.90)
+        self.assertLess(clean_res["epistemic_entropy_bits"], 0.60)
+
+        # Test Case 2: Stealth Backdoor (Merkle Mismatch but KS/Chi2 Pass)
+        stealth_rca = AegisIncidentReasoner.evaluate_incident_hypothesis(
+            model_id="stealth_backdoor_v1",
+            merkle_match=False,
+            svd_spectral_ratio=0.92,
+            stat_risk_score=20.0,
+            behavioral_drift_rate=0.05,
+            causal_impact_delta=0.12,
+            fleet_compromise_count=0
+        )
+        self.assertEqual(stealth_rca["primary_hypothesis"], "H1_STEGANOGRAPHIC_BACKDOOR")
+        self.assertTrue(len(stealth_rca["contradiction_analysis"]) > 0)
+        self.assertIn("Stealth", stealth_rca["contradiction_analysis"][0])
+
+
 if __name__ == "__main__":
     unittest.main()

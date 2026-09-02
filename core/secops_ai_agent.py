@@ -1,19 +1,19 @@
 """
 WEIGHTTRAP — Aegis AI Model Trust Lifecycle Orchestrator & Cognitive Incident Reasoner
-Bayesian Belief Updating, Epistemic Uncertainty Quantification & Dynamic Diagnostic Planning.
+Bayesian-Style Log-Odds Evidence Updating, Shannon Epistemic Uncertainty Quantification & Dynamic Diagnostic Planning.
 
 Core Mathematical Architecture:
-1. Formal Bayesian Belief Updating:
+1. Log-Space Bayesian Evidence Model with Calibrated Diagnostic Log-Odds Weights:
    - Prior distribution over Hypotheses P(H_k):
      H0: Nominal Baseline / Benign Concept Drift
      H1: Targeted Steganographic Parameter Injection (X-LSB)
      H2: Unauthorized In-Memory Hot-Reload / Registry Divergence
      H3: Coordinated Multi-Model Enterprise Fleet Campaign
-   - Likelihood tensor P(E | H_k) computed across 6 distinct empirical diagnostic signals.
-   - Posterior distribution P(H_k | E) = [P(E | H_k) * P(H_k)] / P(E).
+   - Log-likelihood weights s_k(E) calibrated across 6 distinct empirical diagnostic signals.
+   - Posterior distribution P(H_k | E) proportional to P(H_k) * exp(s_k(E)).
 2. Epistemic Uncertainty & Shannon Entropy:
    - Diagnostic Entropy H(H) = -sum(P(H_k) * log2 P(H_k)).
-   - Triggers dynamic forensic zoom when diagnostic ambiguity exceeds threshold.
+   - Triggers dynamic forensic zoom & causal ablation when diagnostic ambiguity exceeds threshold (H > 1.2 bits).
 3. Structured Cognitive RCA & Contradiction Resolution:
    - Detects adaptive stealth evasions (e.g. KS-test uniform pass vs Cryptographic Merkle mismatch).
 """
