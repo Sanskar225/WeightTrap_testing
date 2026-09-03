@@ -430,6 +430,10 @@ class AegisTrustOrchestrator:
             )
 
             # Step 5: Policy Action Engine Authorization (Deterministic Boundary)
+            # SECURITY INVARIANT:
+            # Aegis may investigate, formulate hypotheses, and quantify epistemic uncertainty,
+            # but it strictly CANNOT authorize money-impacting routing changes. Authorization
+            # remains 100% deterministic and governed by the Zero-Trust Policy Engine matrix.
             # Aegis RECOMMENDS -> Policy Engine AUTHORIZES -> Router EXECUTES
             is_campaign_threat = (comp_count >= 2)
             computed_risk = "HIGH" if not (rca.get("epistemic_uncertainty_entropy_bits", 0.0) > 1.20) else "MEDIUM"

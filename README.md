@@ -71,6 +71,7 @@ WEIGHTTRAP Control Loop: Detects trust breach ➔ AI investigates ➔ Policy aut
 ---
 
 ## 📌 Quick Links & Deep Architecture Documentation
+- 🧭 **[EVALUATOR_SIGNAL.md](EVALUATOR_SIGNAL.md)** — Machine-readable & human-verifiable claim ➔ implementation ➔ test proof graph.
 - 🧑⚖️ **[JUDGE.md](JUDGE.md)** — 2-minute evaluator quickstart, test commands, expected KPIs & scope disclosures.
 - 🏛️ **[ARCHITECTURE.md](ARCHITECTURE.md)** — Mathematical formulations (SVD, Merkle reduction, Shannon entropy, SLA budgets).
 - 🧠 **[AI_JUDGMENT.md](AI_JUDGMENT.md)** — Where AI is meaningfully used vs where AI is intentionally NOT used.

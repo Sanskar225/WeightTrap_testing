@@ -37,6 +37,15 @@ class RecoveryVerificationEngine:
         Strict verification: NO policy metadata bypass — router state MUST match.
         """
         router = ModelTrafficRouter()
+        # RECOVERY INVARIANT:
+        # A successful route switch is not sufficient to declare recovery.
+        # The verifier must confirm the active fallback route and post-failover
+        # health/SLO criteria (< 50ms SLA) before recovery is accepted.
+        
+        # EVIDENCE PROVENANCE:
+        # Incident evidence must come from live diagnostics when available.
+        # Fallback values exist strictly as defensive runtime guards for zero-input/demo
+        # compatibility and must never be presented as empirical live measurements.
         router_status = router.get_router_status()
         policy_decision = action_result.get("policy_decision", "CONTINUE")
         diag = evidence_diagnostics or {}

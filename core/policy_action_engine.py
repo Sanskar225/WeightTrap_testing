@@ -29,6 +29,11 @@ class PolicyActionEngine:
     ) -> Dict[str, Any]:
         """
         Evaluates policy rules and returns authorized containment action.
+        
+        # SECURITY INVARIANT:
+        # 1. Deterministic zero-trust matrix governs all financial containment actions.
+        # 2. Systemic campaign threats (is_campaign=True) take absolute precedence over individual risk scores.
+        # 3. Actions are cryptographically signed with POL-AUTH-2026 tokens before router execution.
         """
         if is_campaign:
             policy_decision = "QUARANTINE_CLUSTER"

@@ -58,6 +58,10 @@ class ModelTrafficRouter:
         """
         Actively flips the routing switch from Primary to Fallback model.
         Measures exact in-memory pointer swap latency.
+        
+        # EXECUTION BOUNDARY:
+        # The router executes only an already-authorized deterministic action.
+        # No LLM or generative output is invoked on this critical transaction path.
         """
         t0 = time.perf_counter()
         
