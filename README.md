@@ -43,6 +43,7 @@ WEIGHTTRAP Control Loop: Detects trust breach ➔ AI investigates ➔ Policy aut
 > - **Full Incident Control Loop (14 Steps):** `python cli.py loop`
 > - **Run Automated QA Suite (38 Tests across 6 Engines):** `python run_all_tests.py`
 > - **Run Scientific Empirical Benchmarks (4 Experiments):** `python benchmarks/run_complete_evaluation.py`
+> - 🛠️ **Real Build-Time Failure & Recovery Story:** See **[JUDGE.md — What Broke at 2 AM](JUDGE.md#2-what-broke-at-2-am--real-engineering-failure--recovery)**
 > - 📖 **Complete 2-Minute Verification & Expected KPIs Guide:** 👉 **[JUDGE.md](JUDGE.md)**
 
 ---

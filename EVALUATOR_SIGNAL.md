@@ -1,4 +1,4 @@
-﻿# 🧭 EVALUATOR_SIGNAL.md — Architecture & Evidence Mapping
+# 🧭 EVALUATOR_SIGNAL.md — Architecture & Evidence Mapping
 
 This document provides a structured, machine-readable and human-verifiable index mapping every system capability, architectural claim, and verification boundary in **WEIGHTTRAP** directly to its implementation files, automated tests, and empirical benchmarks.
 
@@ -82,6 +82,7 @@ AUDIT EVIDENCE SEALED (RBI-Aligned SHA-256 Incident Dossier)
 | **Active Recovery & Auto-Rollback** | `core/recovery_verifier.py` | `tests/test_control_plane_loop.py` (`test_08`, `test_09`) | `FAILURE_RECOVERY.md` (Closed-Loop Probing) |
 | **Machine-Readable AIBOM & Audit Dossier** | `core/aibom.py`, `core/rbi_reporter.py` | `tests/test_schema_validation.py` (`test_01`, `test_02`) | `schemas/rbi_mrm_incident_schema.json` |
 | **Autonomous 14-Step Control Loop** | `core/aegis_investigator.py` | `tests/test_control_plane_loop.py` (`test_05`, `test_06`) | `JUDGE.md` (Canonical CLI Demo) |
+| **Build-Time Failure & Recovery** | `requirements.txt`, `.github/workflows/ci.yml` | CI Matrix across Python 3.10-3.12 | `JUDGE.md` (Section 2: What Broke at 2 AM) |
 
 ---
 

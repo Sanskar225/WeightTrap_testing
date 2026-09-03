@@ -30,7 +30,41 @@ python -m unittest tests.test_control_plane_loop.TestControlPlane6Engines.test_0
 
 ---
 
-## 2. 🧪 Run Automated QA Test Suite (38 Tests across 6 Engines)
+## 2. 🛠️ What Broke at 2 AM — Real Engineering Failure & Recovery
+
+*Addressing Razorpay's Core Evaluation Question: "What broke, and how you got out."*
+
+During final CI verification hardening at 2 AM, the core control-plane logic and local test suite were healthy, but the **GitHub Actions CI matrix failed across Python 3.10–3.12** when the FastAPI `TestClient` endpoint verification path could not load its required HTTP client dependency.
+
+```
+FastAPI TestClient Path (tests/test_api_endpoints.py)
+           ↓
+RuntimeError: The starlette.testclient module requires httpx
+           ↓
+GitHub Actions CI Matrix Failed (Python 3.10, 3.11, 3.12)
+```
+
+### Diagnosis
+Instead of modifying application logic or weakening test assertions, I traced the failure directly from the GitHub Actions execution traceback to the verification environment dependency contract.
+
+### Fix & Recovery
+1. Identified the missing HTTP client contract in `FastAPI` / `Starlette`.
+2. Added `httpx>=0.27.0` to `requirements.txt` and unified the CI installation chain.
+3. Re-executed the automated matrix pipeline.
+
+### Verification
+- **Python 3.10 Matrix Job:** 38 / 38 Tests Passed ✅
+- **Python 3.11 Matrix Job:** 38 / 38 Tests Passed ✅
+- **Python 3.12 Matrix Job:** 38 / 38 Tests Passed ✅
+- **Empirical Benchmarks:** 4 / 4 Experiments Programmatically Passed ✅
+
+> **The Engineering Lesson:**  
+> *"Fix the verification environment, not the test."*  
+> *(Context disclosure: This was a CI/dependency verification failure during submission hardening, not a live production outage.)*
+
+---
+
+## 3. 🧪 Run Automated QA Test Suite (38 Tests across 6 Engines)
 
 Runs the complete 6-engine test suite covering observability, cryptographic Merkle trees, SVD spectral signatures, Bayesian belief updating, policy matrix precedence, and closed-loop recovery:
 ```powershell
@@ -45,7 +79,7 @@ make test
 
 ---
 
-## 3. 🔬 Run Scientific Empirical Evaluation Suite (4 Experiments)
+## 4. 🔬 Run Scientific Empirical Evaluation Suite (4 Experiments)
 
 Executes all 4 empirical benchmarks with programmatic acceptance assertion gates:
 ```powershell
@@ -55,7 +89,7 @@ python benchmarks/run_complete_evaluation.py
 
 ---
 
-## 4. 📊 Expected Outputs & Key Operational KPIs
+## 5. 📊 Expected Outputs & Key Operational KPIs
 
 | Evaluation Check | Expected Result | What It Proves |
 |---|---|---|
@@ -69,7 +103,7 @@ python benchmarks/run_complete_evaluation.py
 
 ---
 
-## 5. ⚠️ Known Prototype Boundaries & Scope Disclosures
+## 6. ⚠️ Known Prototype Boundaries & Scope Disclosures
 
 To maintain absolute scientific transparency and integrity:
 
