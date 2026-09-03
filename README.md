@@ -3,6 +3,31 @@
 *Submitted to Razorpay /buildathon 2026 — Track 05 (Open Track: AI Governance & Infrastructure Risk)*  
 *Aligned with RBI Model Risk Management (MRM / FREE-AI Committee Framework)*
 
+[![CI Verification](https://github.com/Sanskar225/WeightTrap_testing/actions/workflows/ci.yml/badge.svg)](https://github.com/Sanskar225/WeightTrap_testing/actions)
+![Tests](https://img.shields.io/badge/Tests-38%2F38%20Passed%20(100%25)-brightgreen)
+![Benchmarks](https://img.shields.io/badge/Benchmarks-4%20Experiments%20Asserted-blue)
+![Control Plane](https://img.shields.io/badge/Control%20Plane-6%20Engines%20Closed--Loop-blueviolet)
+![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-informational)
+
+---
+
+> ### ⚡ 60-Second Evaluator Verdict & Live Demo
+> - **Full Incident Control Loop (14 Steps):** `python cli.py loop`
+> - **Run Automated QA Suite (38 Tests across 6 Engines):** `python run_all_tests.py`
+> - **Run Scientific Empirical Benchmarks (4 Experiments):** `python benchmarks/run_complete_evaluation.py`
+> - 📖 **Complete 2-Minute Verification & Expected KPIs Guide:** 👉 **[JUDGE.md](JUDGE.md)**
+
+---
+
+## 🏆 Razorpay /buildathon Core Evaluation Mapping
+
+| Razorpay Judging Pillar | How WEIGHTTRAP Fulfills It | Verified In Code |
+|---|---|---|
+| **1. Problem Taste** | Protects Tier-0 payment routing/fraud models from silent steganographic weight corruption (EvilModel X-LSB). | [`THREAT_MODEL.md`](THREAT_MODEL.md) |
+| **2. Build Quality** | 38 unit & integration tests, 100% green CI matrix (Python 3.10, 3.11, 3.12), Dockerfile & standalone CLI. | [`tests/`](tests/), [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
+| **3. AI Judgment** | **AI Used:** Aegis Bayesian reasoner ($H_0 \dots H_3$) & Shannon entropy ($H > 1.20\text{b}$).<br>**AI Intentionally NOT Used:** Deterministic Policy Engine + Sub-2ms in-memory pointer swap. | [`AI_JUDGMENT.md`](AI_JUDGMENT.md), [`core/secops_ai_agent.py`](core/secops_ai_agent.py) |
+| **4. Failure Recovery** | Active health probing ($<50\text{ms}$ SLA) with automated rollback on SLO breach (`test_09`). | [`FAILURE_RECOVERY.md`](FAILURE_RECOVERY.md), [`core/recovery_verifier.py`](core/recovery_verifier.py) |
+
 ---
 
 ## 📌 Quick Links & Deep Architecture Documentation
