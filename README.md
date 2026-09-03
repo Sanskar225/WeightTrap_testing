@@ -1,5 +1,5 @@
 # 🛡️ WEIGHTTRAP — Autonomous Control Plane for AI-Native Financial Infrastructure
-### **Continuous Trust Verification, Cognitive AI Incident Reasoning, Sub-2ms Failover & RBI-Aligned Governance**
+### **Continuous Trust Verification, Bayesian Incident Reasoning, Sub-2ms Failover & RBI-Aligned Governance**
 *Submitted to Razorpay /buildathon 2026 — Track 05 (Open Track: AI Governance & Infrastructure Risk)*  
 *Aligned with RBI Model Risk Management (MRM / FREE-AI Committee Framework)*
 
@@ -11,6 +11,34 @@
 
 ---
 
+### *"What happens when the AI making a payment decision can no longer be trusted?"*
+
+A payment gateway can be up. Latency can be healthy. Traffic can be normal. And the AI model deciding risk can still be silently compromised (e.g. steganographic weight backdoors like X-LSB that evade heuristic scanners).
+
+Most monitoring systems stop at detection. **WEIGHTTRAP closes the loop:** it continuously determines whether an AI model can still be trusted, reasons over the forensic evidence under uncertainty, applies deterministic policy, executes atomic in-memory failover to a verified model in $< 2\text{ms}$, validates recovery via active quantitative probes, and seals the incident as auditable evidence.
+
+> **The Core Thesis:**  
+> *Knowing a model is compromised is not enough. The infrastructure must know what to do next.*
+
+---
+
+### 🏛️ Core Architectural Axiom: AI Reasons. Deterministic Controls Act.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  AI can investigate. AI cannot authorize money-impacting actions.          │
+│  Aegis reasons. Policy authorizes. Router executes. Probes verify.          │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+*WEIGHTTRAP treats AI as one cognitive reasoning component inside a safety-critical deterministic control system.*
+
+```
+Traditional Monitoring:  Detects symptoms ➔ Alerts human ➔ Human investigates ➔ Human reroutes ➔ Logs assembled later (45-120 min MTTC)
+WEIGHTTRAP Control Loop: Detects trust breach ➔ AI investigates ➔ Policy authorizes ➔ Router fails over ➔ Probes verify ➔ Seals evidence (< 2ms Failover)
+```
+
+---
+
 > ### ⚡ 60-Second Evaluator Verdict & Live Demo
 > - **Full Incident Control Loop (14 Steps):** `python cli.py loop`
 > - **Run Automated QA Suite (38 Tests across 6 Engines):** `python run_all_tests.py`
@@ -19,14 +47,26 @@
 
 ---
 
+## 🤖 System Overview & Semantic Evaluation Anchors
+
+```yaml
+[PROBLEM]           : AI Model Trust, Stealth Backdoors (X-LSB), and In-Memory Parameter Drift in Tier-0 Fintech
+[INPUT SIGNALS]     : SHA-256 Merkle Trees, Penultimate SVD Singular Value Outliers, Distribution Drift, Causal Ablation
+[AI REASONING]      : Aegis Bayesian Multi-Hypothesis Reasoner (H0..H3), Log-Odds Updating, Shannon Epistemic Uncertainty
+[DETERMINISTIC GATE]: Zero-Trust PolicyActionEngine (Signed POL-AUTH-2026 Tokens), In-Memory Pointer Routing (0.05ms)
+[RECOVERY & AUDIT]  : Active Synthetic Probing (<50ms SLA), Automated Rollback on SLO Breach, Machine-Readable AIBOMs
+```
+
+---
+
 ## 🏆 Razorpay /buildathon Core Evaluation Mapping
 
-| Razorpay Judging Pillar | How WEIGHTTRAP Fulfills It | Verified In Code |
+| Razorpay Judging Pillar | What the Evaluator Sees | Verified In Code |
 |---|---|---|
-| **1. Problem Taste** | Protects Tier-0 payment routing/fraud models from silent steganographic weight corruption (EvilModel X-LSB). | [`THREAT_MODEL.md`](THREAT_MODEL.md) |
-| **2. Build Quality** | 38 unit & integration tests, 100% green CI matrix (Python 3.10, 3.11, 3.12), Dockerfile & standalone CLI. | [`tests/`](tests/), [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
-| **3. AI Judgment** | **AI Used:** Aegis Bayesian reasoner ($H_0 \dots H_3$) & Shannon entropy ($H > 1.20\text{b}$).<br>**AI Intentionally NOT Used:** Deterministic Policy Engine + Sub-2ms in-memory pointer swap. | [`AI_JUDGMENT.md`](AI_JUDGMENT.md), [`core/secops_ai_agent.py`](core/secops_ai_agent.py) |
-| **4. Failure Recovery** | Active health probing ($<50\text{ms}$ SLA) with automated rollback on SLO breach (`test_09`). | [`FAILURE_RECOVERY.md`](FAILURE_RECOVERY.md), [`core/recovery_verifier.py`](core/recovery_verifier.py) |
+| **1. Problem Taste** | AI model compromise is an infrastructure-control problem, not merely an offline detection problem. | [`THREAT_MODEL.md`](THREAT_MODEL.md), [`ARCHITECTURE.md`](ARCHITECTURE.md) |
+| **2. Build Quality** | Real control plane with bounded execution, 38 automated tests, matrix CI (Python 3.10-3.12), and 4 empirical benchmarks. | [`tests/`](tests/), [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
+| **3. AI Judgment** | AI is used where uncertainty exists (Aegis Bayesian reasoning), and intentionally NOT used where determinism is required (Policy matrix & Router). | [`AI_JUDGMENT.md`](AI_JUDGMENT.md), [`core/secops_ai_agent.py`](core/secops_ai_agent.py) |
+| **4. Failure Recovery** | Closed-loop containment: detection ends only after active probe verification ($<50\text{ms}$ SLA) and SHA-256 evidence sealing. | [`FAILURE_RECOVERY.md`](FAILURE_RECOVERY.md), [`core/recovery_verifier.py`](core/recovery_verifier.py) |
 
 ---
 
@@ -41,16 +81,7 @@
 
 ---
 
-## 1. The Core Financial Problem
-
-In high-throughput financial platforms like **Razorpay**, AI models do not operate in isolation—they power **Fraud Scoring Services, Payment Routing Engines, Merchant Risk Classifiers, and Transaction Authorization APIs**.
-
-> **The Production Risk:**
-> *"If an AI model becomes compromised (steganographic parameter backdoors, in-memory hot-reload tampering, or severe concept drift), how does payment infrastructure safely observe, diagnose, contain, and recover in real-time without breaching the 50ms transaction SLA?"*
-
----
-
-## 2. Why Existing Monitoring Tools Miss This
+## 1. Why Existing Monitoring Tools Miss This
 
 | Existing Tool Category | What It Does | Why It Fails in Mission-Critical Fintech |
 |---|---|---|
