@@ -105,9 +105,9 @@ OBSERVE ➔ UNDERSTAND ➔ INVESTIGATE ➔ REASON ➔ DECIDE ➔ ACT ➔ VERIFY 
   - **Stealth Contradiction Resolution:** Explaining why heuristic KS-tests pass while cryptographic Merkle roots diverge.
   - **SecOps Root Cause Analysis (RCA):** Translating topological dependency graphs into an actionable executive summary.
 - **WHERE AI IS INTENTIONALLY NOT USED:**
-  - **Cryptographic Hash Chaining:** Deterministic SHA-256 Merkle trees provide $100\%$ mathematical certainty in $O(\log M)$ time.
+  - **Cryptographic Hash Chaining:** Deterministic SHA-256 Merkle trees provide cryptographic integrity verification with logarithmic proof traversal in $O(\log M)$ time.
   - **Policy Enforcement:** Strict Zero-Trust risk matrices ($R \ge 50 \implies \text{CONTAIN}$) govern financial actions.
-  - **Traffic Failover:** Atomic memory pointer flips swap active models in $0.05\text{ms}$ without LLM latency overhead.
+  - **Traffic Failover:** Atomic memory pointer flips swap active models in $0.05\text{ms}$ (measured in-process) without LLM latency overhead.
   - **Health Verification:** Direct quantitative probes strictly enforce p99 latency ($< 50\text{ms}$ SLO) and fraud accuracy.
 
 ---

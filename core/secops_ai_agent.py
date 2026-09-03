@@ -51,7 +51,7 @@ class AegisIncidentReasoner:
         fleet_compromise_count: int = 0
     ) -> Dict[str, Any]:
         """
-        Calculates formal Bayesian posterior probabilities P(H_k | E)
+        Calculates Bayesian-style normalized posterior scores P(H_k | E)
         conditioned on the observed multi-signal evidence vector E.
         """
         priors = cls.DEFAULT_PRIORS.copy()
@@ -328,7 +328,7 @@ class AegisTrustOrchestrator:
                 "decision": f"Policy Enforcement: {policy_res['policy_decision']}",
                 "evidence": f"SVD spectral ratio {s_ratio:.3f} well below 0.80 anomaly boundary.",
                 "reason": "Conserve compute: Model certified clean without needing expensive ablation or fleet correlation.",
-                "action": f"Authorize `{policy_res['policy_decision']}` route & mint RBI compliance record",
+                "action": f"Authorize `{policy_res['policy_decision']}` route & mint RBI-aligned governance evidence record",
                 "finding": {
                     "policy_decision": policy_res["policy_decision"],
                     "route_authorized": "PRIMARY",
@@ -366,7 +366,7 @@ class AegisTrustOrchestrator:
                 "domain_role": "Integrity Analyst",
                 "decision": f"Forensic Localization & Causal Ablation on Anomaly Layer '{layer_name}'",
                 "evidence": f"SVD ratio {s_ratio:.3f} flagged heavy-tail concentration; Causal delta = {causal_delta:.3f}.",
-                "reason": "Isolate perturbed weights and quantify functional behavioral malice via ablation.",
+                "reason": "Isolate perturbed weights and quantify causal functional impact via ablation.",
                 "action": f"Invoke `forensic_localization(layer='{layer_name}')` + `causal_counterfactual_proof()`",
                 "finding": {
                     "layer_inspected": layer_name,
@@ -374,6 +374,7 @@ class AegisTrustOrchestrator:
                     "entropy": forensic_res.get("entropy", 0.98),
                     "lsb_distortion": forensic_res.get("lsb_distortion", True),
                     "causal_impact_delta": causal_delta,
+                    "causal_functional_impact_confirmed": causal_res.get("causal_functional_impact_confirmed", True),
                     "causal_malice_proven": causal_res.get("causal_malice_proven", True)
                 }
             })

@@ -297,15 +297,18 @@ class AegisAutonomousControlPlane:
 
         if policy_res["failover_executed"]:
             router_action = router.execute_failover_to_fallback()
+            policy_res["measured_failover_latency_ms"] = router_action.get("measured_failover_latency_ms", 0.05)
             traffic_detail = (
                 f"Executed in-memory failover switch: Active model swapped to verified fallback "
                 f"'{router_action['active_model_id']}' in {router_action['measured_failover_latency_ms']}ms."
             )
         elif policy_res["policy_decision"] == "ISOLATE":
             router_action = router.isolate_all_traffic()
+            policy_res["measured_failover_latency_ms"] = router_action.get("measured_failover_latency_ms", 0.05)
             traffic_detail = f"Model traffic severed for '{model_id}'."
         else:
             router_action = router.reset_to_primary()
+            policy_res["measured_failover_latency_ms"] = router_action.get("measured_failover_latency_ms", 0.05)
             traffic_detail = f"Model verified clean. Live traffic actively served by primary model '{model_id}'."
 
         trace.append({

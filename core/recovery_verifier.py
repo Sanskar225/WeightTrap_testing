@@ -145,7 +145,7 @@ class RecoveryVerificationEngine:
                 "containment_action": {
                     "failover_executed": is_fallback_active,
                     "fallback_model_id": fallback_model_id,
-                    "switch_latency_ms": 0.05
+                    "switch_latency_ms": round(float(action_result.get("measured_failover_latency_ms", action_result.get("switch_latency_ms", 0.05))), 4)
                 },
                 "recovery_status": recovery_status,
                 "cryptographic_digest": sealed_evidence_sha256,

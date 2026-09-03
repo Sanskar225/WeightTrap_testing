@@ -2,7 +2,7 @@
 WEIGHTTRAP — Master Unified Empirical Evaluation Suite
 Executes 4 scientific benchmark experiments with zero filter / full disclosure:
 1. Adaptive Adversary Evasion vs Multi-Defense Layers
-2. 100-Model Confusion Matrix & Recall Disclosure (50 Clean vs 50 Adversarial)
+2. 100 Evaluation Instances (50 Clean vs 50 Adversarial) & Recall Disclosure
 3. Inference Latency Overhead Benchmark (10,000 Transactions)
 4. Day-0 SVD Spectral Signature Distribution (40 Models) + Welch's Two-Sample t-Test
 """
@@ -94,7 +94,7 @@ def run_complete_evaluation():
     # EXPERIMENT 2: 100-MODEL COMPLETE CONFUSION MATRIX & RECALL DISCLOSURE
     # --------------------------------------------------------------------------
     print("\n" + "=" * 80)
-    print("[+] EXPERIMENT 2: 100-MODEL CONFUSION MATRIX (50 Clean vs 50 Tampered)")
+    print("[+] EXPERIMENT 2: 100 EVALUATION INSTANCES (50 Clean vs 50 Adversarial)")
     print("-" * 80)
 
     clean_scores = []

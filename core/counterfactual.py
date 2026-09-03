@@ -163,10 +163,11 @@ class CounterfactualValidator:
         causal_differential = float(acc_drop - measured_control_drop)
 
         return {
-            "proof_verdict": "CAUSAL_MALICE_CONFIRMED" if causal_differential > 0.03 or acc_drop > 0.05 else "BENIGN_VARIATION",
+            "proof_verdict": "CAUSAL_FUNCTIONAL_IMPACT_CONFIRMED" if causal_differential > 0.03 or acc_drop > 0.05 else "BENIGN_VARIATION",
             "accuracy_drop": acc_drop,
             "control_drop": round(measured_control_drop, 4),
             "causal_differential": round(causal_differential, 4),
+            "causal_functional_impact_confirmed": (causal_differential > 0.03 or acc_drop > 0.05),
             "causal_malice_proven": (causal_differential > 0.03 or acc_drop > 0.05),
             "target_layer": target_layer,
             "control_layer": control_layer_name
