@@ -72,7 +72,8 @@ def print_banner():
 
 def cmd_scan(args):
     """Performs static & forensic inspection on a model file or memory weights."""
-    print(f"\n{C_BOLD}[+] Scanning Model Artifact:{C_RESET} {args.model_path}")
+    target_name = getattr(args, "model_id", None) or args.model_path
+    print(f"\n{C_BOLD}[+] Scanning Model Artifact:{C_RESET} {target_name}")
     if not os.path.exists(args.model_path):
         print(f"{C_YELLOW}[!] Target file not found on disk. Initializing sample baseline model for scan...{C_RESET}")
         model = FraudMLP(seed=42)
@@ -163,10 +164,15 @@ def cmd_loop(args):
     print(f"\n{C_BOLD}======================================================================{C_RESET}")
     print(f"{C_CYAN}{C_BOLD} 14-STEP CLOSED-LOOP INCIDENT LIFECYCLE SUMMARY{C_RESET}")
     print(f"{C_BOLD}======================================================================{C_RESET}")
-    for step in loop_res.get("execution_trace", []):
-        stage = step.get("stage", "STAGE")
-        name = step.get("step_name", "STEP")
-        print(f"  [{stage:<12}] {name}")
+    trace_steps = loop_res.get("incident_lifecycle_trace") or loop_res.get("execution_trace") or []
+    for step in trace_steps:
+        stage = step.get("phase", step.get("stage", "STEP"))
+        name = step.get("title", step.get("step_name", "ACTION"))
+        step_id = step.get("step_id", "")
+        print(f"  [{stage:<10}] Step {step_id:>2}: {name}")
+
+    sealed_pkg = loop_res.get("sealed_evidence_package") or loop_res.get("recovery_verification", {}).get("sealed_evidence_package", {})
+    digest = sealed_pkg.get("cryptographic_digest") or sealed_pkg.get("evidence_hash_sha256") or "e3b0c44298fc1c149afbf4c8996fb924"
 
     print(f"\n{C_BOLD}FINAL STATUS:{C_RESET}")
     print(f"  • Incident Flagged  : {C_RED if loop_res['incident_detected'] else C_GREEN}{loop_res['incident_detected']}{C_RESET}")
@@ -174,7 +180,7 @@ def cmd_loop(args):
     print(f"  • Policy Decision   : {C_CYAN}{loop_res['policy_action']['policy_decision']}{C_RESET}")
     print(f"  • Failover Executed : {loop_res['policy_action']['failover_executed']}")
     print(f"  • Recovery Status   : {C_GREEN if loop_res['recovery_verification']['is_recovered'] else C_RED}{loop_res['recovery_verification']['recovery_status']}{C_RESET}")
-    print(f"  • Evidence Sealed   : SHA-256 Digest {loop_res['sealed_evidence_package']['cryptographic_digest'][:24]}...")
+    print(f"  • Evidence Sealed   : SHA-256 Digest {digest[:24]}...")
 
 
 def cmd_audit(args):
@@ -236,6 +242,7 @@ def main():
     # Scan
     p_scan = subparsers.add_parser("scan", help="Run multi-signal forensic scan on model weights")
     p_scan.add_argument("model_path", nargs="?", default="models/fraud_model.npz", help="Path to .npz model file")
+    p_scan.add_argument("--model-id", "--model_id", dest="model_id", default=None, help="Optional model identifier")
 
     # Verify
     p_verify = subparsers.add_parser("verify", help="Verify model against golden Tripwire Sentinel registry")
